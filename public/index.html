@@ -307,7 +307,7 @@ function renderAssemble(){
     const pc=q.pieces.find(x=>x.id===id);
     const b=document.createElement('button');
     b.className='placed';
-    b.innerHTML=`${pc.en}<span class="k">${pc.ko}</span>`;
+    b.innerHTML=`${pc.en}`;
     b.onclick=()=>removeTile(id);
     box.appendChild(b);
   });
