@@ -2,118 +2,486 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>조립 게임 결과 (교수자용)</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>의학용어 게임</title>
 <style>
-  :root{--bg1:#fff4f8;--bg2:#eef7ff;--pink:#ff9fc4;--mint:#7fe3c9;--lav:#b9a7ff;--ink:#5b4a5a;--muted:#a99bb0;}
+  :root{
+    --ink:#1a2b3c;
+    --paper:#f6f3ec;
+    --card:#ffffff;
+    --line:#e2ddd0;
+    --muted:#8a8577;
+    --teal:#0f7d76;
+    --teal-soft:#e3f2f0;
+    --coral:#d65a4a;
+    --coral-soft:#fbe8e4;
+    --gold:#c98a1f;
+    --gold-soft:#f6ecd6;
+    --ok:#1a8f6b;
+    --ok-soft:#e0f3ea;
+    --no:#c9433a;
+    --no-soft:#fbe6e4;
+  }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Jua',-apple-system,'Malgun Gothic',sans-serif;background:linear-gradient(160deg,var(--bg1),var(--bg2));color:var(--ink);min-height:100vh;padding:26px}
-  .wrap{max-width:840px;margin:0 auto}
-  h1{font-size:26px;color:#ff7fb0;margin-bottom:16px}
-  .card{background:#fff;border:3px solid #ffe4f0;border-radius:28px;padding:26px;box-shadow:0 16px 40px rgba(255,159,196,.22)}
-  input{padding:14px 16px;border:3px solid #ffe0ec;border-radius:16px;font-size:17px;font-family:inherit;outline:none;background:#fffafc}
-  button{padding:14px 24px;border:none;border-radius:16px;font-size:17px;font-family:inherit;color:#fff;cursor:pointer;background:linear-gradient(135deg,var(--pink),var(--lav));box-shadow:0 6px 0 -1px #e98bc0}
-  button:active{transform:translateY(4px);box-shadow:0 2px 0 -1px #e98bc0}
-  .row1{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-  .err{color:#ff6f8e;margin-top:10px;min-height:20px}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Malgun Gothic","맑은 고딕",sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    line-height:1.5;
+  }
+  .card{
+    background:var(--card);
+    width:100%;
+    max-width:520px;
+    border-radius:20px;
+    border:1px solid var(--line);
+    box-shadow:0 12px 40px rgba(26,43,60,.08);
+    overflow:hidden;
+  }
+
+  /* ── 상단 진행바 ── */
+  .top{
+    padding:18px 24px 0;
+  }
+  .progress-wrap{
+    display:flex;align-items:center;gap:12px;
+  }
+  .progress-bar{
+    flex:1;height:8px;background:var(--line);border-radius:99px;overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;background:var(--teal);width:0%;
+    transition:width .35s ease;
+  }
+  .progress-txt{
+    font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;
+  }
+  .score-pill{
+    font-size:13px;font-weight:700;color:var(--teal);
+    background:var(--teal-soft);padding:4px 12px;border-radius:99px;
+  }
+
+  .body{padding:24px}
+
+  /* ── 시작 화면 ── */
+  .intro h1{font-size:26px;margin-bottom:8px;letter-spacing:-.5px}
+  .intro .lead{color:var(--muted);font-size:15px;margin-bottom:24px}
+  .rules{
+    background:var(--paper);border-radius:14px;padding:18px 20px;margin-bottom:24px;
+  }
+  .rules .r{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;font-size:14px}
+  .rules .r:last-child{margin-bottom:0}
+  .rules .ic{
+    flex-shrink:0;width:26px;height:26px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;font-size:14px;
+  }
+  .ic.build{background:var(--teal-soft)}
+  .ic.choice{background:var(--gold-soft)}
+
+  /* ── 문제 헤더 ── */
+  .qtag{
+    display:inline-block;font-size:12px;font-weight:700;letter-spacing:.3px;
+    padding:5px 12px;border-radius:99px;margin-bottom:14px;
+  }
+  .qtag.build{background:var(--teal-soft);color:var(--teal)}
+  .qtag.choice{background:var(--gold-soft);color:var(--gold)}
+  .prompt{font-size:22px;font-weight:700;margin-bottom:6px;letter-spacing:-.3px;line-height:1.35}
+  .hint{font-size:14px;color:var(--muted);margin-bottom:22px}
+
+  /* ── 조립 영역 ── */
+  .build-slot{
+    min-height:60px;border:2px dashed var(--line);border-radius:14px;
+    display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+    padding:12px;margin-bottom:8px;
+  }
+  .build-slot.empty::before{
+    content:"여기에 조립됩니다";color:var(--muted);font-size:14px;
+  }
+  .slot-tile{
+    background:var(--teal);color:#fff;font-weight:700;font-size:16px;
+    padding:9px 15px;border-radius:10px;cursor:pointer;
+    animation:pop .18s ease;
+  }
+  @keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+  .slot-hint{font-size:12px;color:var(--muted);margin-bottom:16px}
+
+  .tiles{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+  .tile{
+    background:#fff;border:2px solid var(--teal);color:var(--teal);
+    font-weight:700;font-size:16px;padding:10px 16px;border-radius:10px;
+    cursor:pointer;transition:transform .1s ease,background .15s ease;
+  }
+  .tile:hover{background:var(--teal-soft)}
+  .tile:active{transform:translateY(2px)}
+  .tile.used{opacity:.3;pointer-events:none;text-decoration:line-through}
+
+  /* ── 객관식 보기 ── */
+  .choices{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+  .choice{
+    text-align:left;background:#fff;border:2px solid var(--line);
+    border-radius:12px;padding:14px 16px;font-size:16px;color:var(--ink);
+    cursor:pointer;display:flex;align-items:center;gap:12px;
+    transition:border-color .15s ease,background .15s ease;
+    font-family:inherit;
+  }
+  .choice:hover{border-color:var(--gold)}
+  .choice .num{
+    flex-shrink:0;width:26px;height:26px;border-radius:7px;background:var(--paper);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--muted);
+  }
+  .choice.correct{border-color:var(--ok);background:var(--ok-soft)}
+  .choice.correct .num{background:var(--ok);color:#fff}
+  .choice.wrong{border-color:var(--no);background:var(--no-soft)}
+  .choice.wrong .num{background:var(--no);color:#fff}
+  .choice.locked{pointer-events:none}
+  .choice.dim{opacity:.5}
+
+  /* ── 버튼 ── */
+  .btn{
+    width:100%;border:none;border-radius:12px;padding:15px;
+    font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;
+    transition:transform .1s ease,opacity .15s ease;
+  }
+  .btn:active{transform:translateY(2px)}
+  .btn-primary{background:var(--teal);color:#fff}
+  .btn-gold{background:var(--gold);color:#fff}
+  .btn-ghost{background:#fff;color:var(--muted);border:2px solid var(--line)}
+  .btn:disabled{opacity:.4;pointer-events:none}
+  .btn-row{display:flex;gap:10px}
+  .btn-row .btn{flex:1}
+
+  /* ── 피드백 ── */
+  .fb{
+    border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:15px;
+    animation:pop .2s ease;
+  }
+  .fb.ok{background:var(--ok-soft);color:var(--ok)}
+  .fb.no{background:var(--no-soft);color:var(--no)}
+  .fb b{color:var(--ink)}
+  .fb-title{font-weight:700;margin-bottom:2px}
+
+  /* ── 완료 화면 ── */
+  .done{text-align:center;padding:10px 0}
+  .done .emoji{font-size:60px;display:block;margin-bottom:10px}
+  .done .big{font-size:40px;font-weight:800;color:var(--teal);margin-bottom:4px;font-variant-numeric:tabular-nums}
+  .done .sub{color:var(--muted);font-size:15px;margin-bottom:24px}
+  .done .rank{font-size:18px;font-weight:700;margin-bottom:24px}
+
   .hidden{display:none}
-  .stats{display:flex;gap:14px;flex-wrap:wrap;margin:18px 0}
-  .stat{background:#fff0f6;border:2px solid #ffe0ec;border-radius:18px;padding:14px 22px;text-align:center;flex:1;min-width:120px}
-  .stat .n{font-size:28px;color:var(--pink)}
-  .stat .l{font-size:14px;color:var(--muted)}
-  table{width:100%;border-collapse:collapse;margin-top:10px;font-size:16px}
-  th,td{padding:12px 10px;text-align:left;border-bottom:2px solid #f4eaf1}
-  th{color:var(--muted);font-weight:normal;font-size:15px}
-  tr:hover td{background:#fffafc}
-  .tools{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
-  .tool{background:#fff;border:2px solid #ffe0ec;color:#e07ba6;box-shadow:none;font-size:15px;padding:10px 18px;border-radius:999px}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>📋 조립 게임 결과 (교수자용)</h1>
+<div class="card">
 
-  <div id="login" class="card">
-    <p style="margin-bottom:14px;color:var(--muted)">확인용 비밀번호를 입력하세요</p>
-    <div class="row1">
-      <input id="code" type="password" placeholder="비밀번호" />
-      <button id="loginBtn">확인</button>
+  <!-- 진행바 (게임 중에만) -->
+  <div class="top hidden" id="top">
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-txt" id="progressTxt">1 / 22</span>
+      <span class="score-pill" id="scorePill">0점</span>
     </div>
-    <div class="err" id="loginErr"></div>
   </div>
 
-  <div id="panel" class="card hidden">
-    <div class="row1">
-      <button id="refreshBtn">🔄 새로고침</button>
-      <input id="search" placeholder="이름/학번 검색" style="flex:1;min-width:160px" />
+  <div class="body">
+
+    <!-- 시작 화면 -->
+    <div id="intro" class="intro">
+      <h1>🩺 의학용어 게임</h1>
+      <p class="lead">어근을 조립하고 퀴즈를 풀며 의학용어를 익혀보세요.</p>
+      <div class="rules">
+        <div class="r">
+          <div class="ic build">🧩</div>
+          <div><b>조립 문제</b> — 한글 뜻을 보고 어근·연결모음·접미사 타일을 순서대로 눌러 영어 용어를 만드세요.</div>
+        </div>
+        <div class="r">
+          <div class="ic choice">✅</div>
+          <div><b>객관식 문제</b> — 네 개의 보기 중 정답을 하나 고르세요.</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="startBtn">시작하기</button>
     </div>
-    <div class="stats">
-      <div class="stat"><div class="n" id="stCount">0</div><div class="l">제출한 학생</div></div>
-      <div class="stat"><div class="n" id="stAvg">0</div><div class="l">평균 점수</div></div>
-      <div class="stat"><div class="n" id="stMax">0</div><div class="l">최고 점수</div></div>
-    </div>
-    <table>
-      <thead><tr><th>이름</th><th>학번</th><th>점수</th><th>정답</th><th>제출시각</th><th>횟수</th></tr></thead>
-      <tbody id="tbody"></tbody>
-    </table>
-    <div class="tools">
-      <button class="tool" id="csvBtn">📥 엑셀(CSV)로 내려받기</button>
-      <button class="tool" id="resetBtn">🗑️ 기록 전체 삭제</button>
-    </div>
-    <div class="err" id="msg" style="color:var(--mint)"></div>
+
+    <!-- 문제 화면 -->
+    <div id="quiz" class="hidden"></div>
+
+    <!-- 완료 화면 -->
+    <div id="result" class="hidden"></div>
+
   </div>
 </div>
 
 <script>
-const $=(id)=>document.getElementById(id);
-let CODE='', DATA=[];
+/* ─────────────────────────────
+   문제 데이터
+  ───────────────────────────── */
+const BUILD = [
+  { meaning:"백혈구",    answer:["leuk","o","cyte"], distractors:["oste","gastr","itis","ectomy"] },
+  { meaning:"적혈구",    answer:["erythr","o","cyte"], distractors:["oste","gastr","itis","ectomy"] },
+  { meaning:"신장염",    answer:["nephr","itis"], distractors:["oste","gastr","otomy","pathy"] },
+  { meaning:"신경병증", answer:["neur","o","pathy"], distractors:["oste","gastr","itis","ectomy"] },
+  { meaning:"피부질환", answer:["dermat","o","pathy"], distractors:["oste","gastr","itis","ectomy"] },
+  { meaning:"간비대",    answer:["hepat","o","megaly"], distractors:["oste","gastr","itis","ectomy"] },
+  { meaning:"심장비대", answer:["cardi","megaly"], distractors:["oste","gastr","itis","pathy"] },
+  { meaning:"관절염",    answer:["arthr","itis"], distractors:["oste","gastr","megaly","pathy"] },
+  { meaning:"위절제술", answer:["gastr","ectomy"], distractors:["oste","arthr","itis","pathy"] },
+  { meaning:"신장질환", answer:["nephr","pathy"], distractors:["oste","gastr","itis","ectomy"] },
+  { meaning:"신경통",    answer:["neur","algia"], distractors:["oste","gastr","itis","ectomy"] },
+];
 
-$('loginBtn').onclick=load;
-$('code').onkeydown=(e)=>{ if(e.key==='Enter') load(); };
-$('refreshBtn').onclick=()=>fetchResults();
-$('search').oninput=render;
+const CHOICE = [
+  { prompt:"의학용어에서 '푸른색(blue)'을 나타내는 색깔 어근은?",
+    choices:["leuk/o","melan/o","cyan/o","erythr/o"], answer:2 },
+  { prompt:"다음 중 '염증'을 뜻하는 접미사는?",
+    choices:["-ectomy","-itis","-megaly","-pathy"], answer:1 },
+  { prompt:"단어 cardiomegaly에서 접미사 -megaly의 정확한 의미는?",
+    choices:["염증","절제술","거대함, 커짐","질병"], answer:2 },
+  { prompt:"다음 중 '뼈'를 뜻하는 어근은?",
+    choices:["dermat/o","oste/o","neur/o","gastr/o"], answer:1 },
+  { prompt:"의학용어 부품을 이을 때 사용하는 연결모음에 대한 설명으로 옳은 것은?",
+    choices:[
+      "어근과 어근을 이을 때는 연결모음을 넣지 않는다.",
+      "자음으로 시작하는 접미사가 오면 연결모음 'o'를 넣는다.",
+      "모음으로 시작하는 접미사가 오면 연결모음 'o'를 반드시 붙인다.",
+      "자음 앞·모음 앞 규칙이 항상 예외 없이 똑같이 적용된다."
+    ], answer:1 },
+  { prompt:"다음 중 '복부(배)'를 뜻하는 전신용어 어근은?",
+    choices:["crani/o","thorac/o","abdomin/o","lumb/o"], answer:2 },
+  { prompt:"복부를 배꼽 기준으로 4등분했을 때, '오른쪽위사분역'을 뜻하는 약어는?",
+    choices:["LUQ","LLQ","RUQ","RLQ"], answer:2 },
+  { prompt:"인체를 좌우 대칭으로 나누는 가상의 면은?",
+    choices:["이마면 (Frontal plane)","가로면 (Transverse plane)","정중시상면 (Midsagittal plane)","수평면 (Horizontal plane)"], answer:2 },
+  { prompt:"인체 방향 용어 중 '몸쪽에 가까운'을 뜻하는 용어는?",
+    choices:["distal","proximal","medial","lateral"], answer:1 },
+  { prompt:"병동 실무에서 '즉시, 응급'으로 진행함을 뜻하는 약어는?",
+    choices:["NPO","PRN","stat","BID"], answer:2 },
+  { prompt:"하루에 3회 투약을 뜻하는 병동 처방 약어는?",
+    choices:["TID","QID","HS","IM"], answer:0 },
+];
 
-function load(){
-  CODE=$('code').value.trim();
-  fetchResults(true);
+/* build/choice 문제를 하나의 리스트로 합치고 섞기 */
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
 }
-function fetchResults(first){
-  fetch('/api/results?code='+encodeURIComponent(CODE))
-    .then(r=>{ if(r.status===401) throw new Error('비밀번호가 틀렸어요'); return r.json(); })
-    .then(d=>{
-      DATA=d.results||[];
-      if(first){ $('login').classList.add('hidden'); $('panel').classList.remove('hidden'); }
-      render();
-    })
-    .catch(e=>{ $('loginErr').textContent=e.message; });
+
+let quizList=[], current=0, score=0, answered=false;
+
+function buildQuizList(){
+  const b=BUILD.map(q=>({type:"build",...q}));
+  const c=CHOICE.map(q=>({type:"choice",...q}));
+  quizList=shuffle([...b,...c]);
 }
-function render(){
-  const kw=$('search').value.trim().toLowerCase();
-  const list=DATA.filter(r=>!kw||r.name.toLowerCase().includes(kw)||String(r.sid).toLowerCase().includes(kw));
-  $('stCount').textContent=DATA.length;
-  const avg=DATA.length?Math.round(DATA.reduce((s,r)=>s+r.score,0)/DATA.length):0;
-  const max=DATA.length?Math.max(...DATA.map(r=>r.score)):0;
-  $('stAvg').textContent=avg; $('stMax').textContent=max;
-  $('tbody').innerHTML=list.map(r=>{
-    const t=new Date(r.at); const ts=`${t.getMonth()+1}/${t.getDate()} ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
-    return `<tr><td>${esc(r.name)}</td><td>${esc(r.sid)}</td><td>${r.score}점</td><td>${r.correct}/${r.total}</td><td>${ts}</td><td>${r.attempts||1}회</td></tr>`;
-  }).join('')||'<tr><td colspan="6" style="color:var(--muted);text-align:center;padding:24px">아직 제출한 학생이 없어요</td></tr>';
+
+/* ─────────────────────────────
+   화면 전환
+  ───────────────────────────── */
+const $intro=document.getElementById("intro");
+const $quiz=document.getElementById("quiz");
+const $result=document.getElementById("result");
+const $top=document.getElementById("top");
+
+document.getElementById("startBtn").onclick=startGame;
+
+function startGame(){
+  buildQuizList();
+  current=0; score=0;
+  $intro.classList.add("hidden");
+  $result.classList.add("hidden");
+  $quiz.classList.remove("hidden");
+  $top.classList.remove("hidden");
+  renderQuestion();
 }
-$('csvBtn').onclick=()=>{
-  const rows=[['이름','학번','점수','정답','총문항','제출시각','횟수']];
-  DATA.forEach(r=>rows.push([r.name,r.sid,r.score,r.correct,r.total,r.at,r.attempts||1]));
-  const csv='\uFEFF'+rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob); a.download='퀴즈결과.csv'; a.click();
-};
-$('resetBtn').onclick=()=>{
-  if(!confirm('정말 모든 제출 기록을 삭제할까요? (되돌릴 수 없어요)')) return;
-  fetch('/api/reset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:CODE})})
-    .then(r=>r.json()).then(d=>{ if(d.ok){ DATA=[]; render(); $('msg').textContent='기록을 삭제했어요.'; } });
-};
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+function updateTop(){
+  const total=quizList.length;
+  document.getElementById("progressFill").style.width=(current/total*100)+"%";
+  document.getElementById("progressTxt").textContent=(current+1)+" / "+total;
+  document.getElementById("scorePill").textContent=score+"점";
+}
+
+function renderQuestion(){
+  answered=false;
+  updateTop();
+  const q=quizList[current];
+  if(q.type==="build") renderBuild(q);
+  else renderChoice(q);
+}
+
+/* ─────────────────────────────
+   조립 문제
+  ───────────────────────────── */
+function renderBuild(q){
+  // 정답 타일과 오답 타일을 합쳐서 섞되, 중복 제거
+  const combinedTiles = [...q.answer, ...q.distractors];
+  const scrambled = shuffle(combinedTiles);
+  const placed=[]; // 조립된 인덱스 (scrambled 기준)
+
+  $quiz.innerHTML=`
+    <span class="qtag build">🧩 조립 문제</span>
+    <div class="prompt">${q.meaning}</div>
+    <div class="hint">올바른 타일을 순서대로 눌러 영어 용어를 조립하세요. (함정 타일 주의!)</div>
+    <div class="build-slot empty" id="slot"></div>
+    <div class="slot-hint">조립된 타일을 누르면 다시 뺄 수 있어요.</div>
+    <div class="tiles" id="tiles"></div>
+    <div id="fbArea"></div>
+    <button class="btn btn-primary" id="checkBtn" disabled>정답 확인</button>
+  `;
+
+  const $slot=document.getElementById("slot");
+  const $tiles=document.getElementById("tiles");
+  const $check=document.getElementById("checkBtn");
+
+  scrambled.forEach((part,idx)=>{
+    const t=document.createElement("button");
+    t.className="tile";
+    t.textContent=part;
+    t.onclick=()=>{
+      if(answered) return;
+      t.classList.add("used");
+      placed.push(idx);
+      redrawSlot();
+    };
+    $tiles.appendChild(t);
+  });
+
+  function redrawSlot(){
+    $slot.innerHTML="";
+    if(placed.length===0){ $slot.classList.add("empty"); }
+    else{ $slot.classList.remove("empty"); }
+    placed.forEach((sIdx,pos)=>{
+      const st=document.createElement("span");
+      st.className="slot-tile";
+      st.textContent=scrambled[sIdx];
+      st.onclick=()=>{
+        if(answered) return;
+        placed.splice(pos,1);
+        $tiles.children[sIdx].classList.remove("used");
+        redrawSlot();
+      };
+      $slot.appendChild(st);
+    });
+    $check.disabled = placed.length===0;
+  }
+
+  $check.onclick=()=>{
+    if(answered) return;
+    answered=true;
+    const made=placed.map(i=>scrambled[i]);
+    const correct = (made.length === q.answer.length) && made.every((val, i) => val === q.answer[i]);
+    if(correct) score++;
+    // 타일/슬롯 잠금
+    [...$tiles.children].forEach(c=>c.style.pointerEvents="none");
+    [...$slot.children].forEach(c=>c.style.pointerEvents="none");
+    const correctWord=q.answer.join("");
+    const madeWord=made.join("");
+    document.getElementById("fbArea").innerHTML = correct
+      ? `<div class="fb ok"><div class="fb-title">정답입니다! 🎉</div><b>${correctWord}</b> = ${q.answer.join(" + ")}</div>`
+      : `<div class="fb no"><div class="fb-title">아쉬워요</div>내 답: ${madeWord||"—"} · 정답: <b>${correctWord}</b> (${q.answer.join(" + ")})</div>`;
+    swapToNext($check);
+  };
+}
+
+/* ─────────────────────────────
+   객관식 문제
+  ───────────────────────────── */
+function renderChoice(q){
+  // 보기를 섞되 정답 위치를 추적
+  const order=shuffle(q.choices.map((text,i)=>({text,correct:i===q.answer})));
+
+  $quiz.innerHTML=`
+    <span class="qtag choice">✅ 객관식 문제</span>
+    <div class="prompt">${q.prompt}</div>
+    <div class="hint">정답이라고 생각하는 보기를 하나 고르세요.</div>
+    <div class="choices" id="choices"></div>
+    <div id="fbArea"></div>
+    <button class="btn btn-gold hidden" id="nextBtn">다음 문제</button>
+  `;
+
+  const $choices=document.getElementById("choices");
+  const numLabels=["①","②","③","④","⑤"];
+
+  order.forEach((opt,idx)=>{
+    const b=document.createElement("button");
+    b.className="choice";
+    b.innerHTML=`<span class="num">${numLabels[idx]}</span><span>${opt.text}</span>`;
+    b.onclick=()=>{
+      if(answered) return;
+      answered=true;
+      const correct=opt.correct;
+      if(correct) score++;
+      // 모든 보기 잠금 + 표시
+      [...$choices.children].forEach((c,i)=>{
+        c.classList.add("locked");
+        if(order[i].correct) c.classList.add("correct");
+        else if(i===idx) c.classList.add("wrong");
+        else c.classList.add("dim");
+      });
+      const correctText=order.find(o=>o.correct).text;
+      document.getElementById("fbArea").innerHTML = correct
+        ? `<div class="fb ok"><div class="fb-title">정답입니다! 🎉</div>잘하셨어요.</div>`
+        : `<div class="fb no"><div class="fb-title">아쉬워요</div>정답: <b>${correctText}</b></div>`;
+      const $next=document.getElementById("nextBtn");
+      $next.classList.remove("hidden");
+      $next.textContent = isLast() ? "결과 보기" : "다음 문제";
+      $next.onclick=goNext;
+      updateTop();
+    };
+    $choices.appendChild(b);
+  });
+}
+
+/* ─────────────────────────────
+   다음 문제 / 결과
+  ───────────────────────────── */
+function isLast(){ return current>=quizList.length-1; }
+
+function swapToNext(btn){
+  updateTop();
+  btn.textContent = isLast() ? "결과 보기" : "다음 문제";
+  btn.className = "btn btn-gold";
+  btn.disabled=false;
+  btn.onclick=goNext;
+}
+
+function goNext(){
+  current++;
+  if(current>=quizList.length) showResult();
+  else renderQuestion();
+}
+
+function showResult(){
+  $quiz.classList.add("hidden");
+  $top.classList.add("hidden");
+  $result.classList.remove("hidden");
+  const total=quizList.length;
+  const pct=Math.round(score/total*100);
+  let emoji,rank;
+  if(pct===100){emoji="🏆";rank="완벽해요! 의학용어 마스터";}
+  else if(pct>=80){emoji="🎉";rank="훌륭해요!";}
+  else if(pct>=60){emoji="👍";rank="잘했어요!";}
+  else if(pct>=40){emoji="💪";rank="조금만 더!";}
+  else{emoji="📚";rank="복습이 필요해요";}
+
+  $result.innerHTML=`
+    <div class="done">
+      <span class="emoji">${emoji}</span>
+      <div class="big">${score} / ${total}</div>
+      <div class="sub">정답률 ${pct}%</div>
+      <div class="rank">${rank}</div>
+      <button class="btn btn-primary" id="againBtn">다시 도전하기</button>
+    </div>
+  `;
+  document.getElementById("againBtn").onclick=startGame;
+}
 </script>
 </body>
 </html>
