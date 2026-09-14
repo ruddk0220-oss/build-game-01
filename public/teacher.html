@@ -320,10 +320,10 @@ function renderQuestion(){
    조립 문제
   ───────────────────────────── */
 function renderBuild(q){
-  // 정답 타일과 오답 타일을 합쳐서 섞되, 중복 제거
-  const combinedTiles = [...q.answer, ...q.distractors];
+  const distractorList = q.distractors || ["oste", "gastr", "itis", "ectomy"];
+  const combinedTiles = [...q.answer, ...distractorList];
   const scrambled = shuffle(combinedTiles);
-  const placed=[]; // 조립된 인덱스 (scrambled 기준)
+  const placed=[]; 
 
   $quiz.innerHTML=`
     <span class="qtag build">🧩 조립 문제</span>
@@ -378,7 +378,6 @@ function renderBuild(q){
     const made=placed.map(i=>scrambled[i]);
     const correct = (made.length === q.answer.length) && made.every((val, i) => val === q.answer[i]);
     if(correct) score++;
-    // 타일/슬롯 잠금
     [...$tiles.children].forEach(c=>c.style.pointerEvents="none");
     [...$slot.children].forEach(c=>c.style.pointerEvents="none");
     const correctWord=q.answer.join("");
@@ -394,7 +393,6 @@ function renderBuild(q){
    객관식 문제
   ───────────────────────────── */
 function renderChoice(q){
-  // 보기를 섞되 정답 위치를 추적
   const order=shuffle(q.choices.map((text,i)=>({text,correct:i===q.answer})));
 
   $quiz.innerHTML=`
@@ -418,7 +416,6 @@ function renderChoice(q){
       answered=true;
       const correct=opt.correct;
       if(correct) score++;
-      // 모든 보기 잠금 + 표시
       [...$choices.children].forEach((c,i)=>{
         c.classList.add("locked");
         if(order[i].correct) c.classList.add("correct");
