@@ -4,52 +4,59 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>의학용어 게임 결과 (교수자용)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Jua&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#1a2b3c; --paper:#f6f3ec; --card:#ffffff; --line:#e2ddd0; --muted:#8a8577;
-    --teal:#0f7d76; --teal-soft:#e3f2f0; --gold:#c98a1f; --no:#c9433a;
+    --ink:#5a5568; --mint:#7ed9c3; --mint-soft:#dff7f0; --mint-deep:#3fbfa3;
+    --pink:#ffb3c9; --pink-soft:#ffe3ec; --pink-deep:#ff7fa3;
+    --yellow-soft:#fff6d9; --cream:#fffaf3; --line:#f0e6dd; --muted:#a89f97;
+    --no:#ff8f9c;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Malgun Gothic","맑은 고딕",sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;padding:24px;line-height:1.5}
-  .wrap{max-width:900px;margin:0 auto}
-  h1{font-size:24px;margin-bottom:4px}
-  .sub{color:var(--muted);font-size:14px;margin-bottom:20px}
+  body{font-family:'Gaegu','Malgun Gothic',sans-serif;background:linear-gradient(135deg,#fff6d9 0%,#ffe3ec 50%,#dff7f0 100%);background-attachment:fixed;color:var(--ink);min-height:100vh;padding:24px;line-height:1.55;font-size:17px}
+  .wrap{max-width:920px;margin:0 auto}
+  h1{font-family:'Jua',sans-serif;font-size:30px;margin-bottom:4px;color:var(--pink-deep)}
+  .sub{color:var(--muted);font-size:16px;margin-bottom:20px;font-weight:700}
+  h1,.btn,.stat .v{font-family:'Jua',sans-serif}
 
-  .login{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px;max-width:380px}
-  input,select{padding:12px 14px;border:2px solid var(--line);border-radius:10px;font-size:15px;background:#fbfdff;color:var(--ink);outline:none;font-family:inherit}
-  input:focus,select:focus{border-color:var(--teal)}
+  .login{background:var(--cream);border:3px solid #fff;border-radius:26px;padding:26px;max-width:400px;box-shadow:0 12px 34px rgba(255,127,163,.15)}
+  input,select{padding:13px 16px;border:3px solid var(--pink-soft);border-radius:16px;font-size:16px;background:#fff;color:var(--ink);outline:none;font-family:'Gaegu',sans-serif;font-weight:700}
+  input:focus,select:focus{border-color:var(--pink)}
   .login input{width:100%;margin-bottom:12px}
-  .btn{border:none;border-radius:10px;padding:12px 18px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;background:var(--teal);color:#fff}
-  .btn.ghost{background:#fff;color:var(--muted);border:2px solid var(--line)}
-  .btn.danger{background:var(--no)}
-  .err{color:var(--no);font-size:14px;min-height:20px;margin-top:8px}
+  .btn{border:none;border-radius:16px;padding:13px 20px;font-size:17px;cursor:pointer;background:linear-gradient(135deg,var(--pink),var(--pink-deep));color:#fff;box-shadow:0 4px 0 rgba(255,127,163,.3)}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(255,127,163,.3)}
+  .btn.ghost{background:#fff;color:var(--muted);border:3px solid var(--pink-soft);box-shadow:0 4px 0 rgba(240,230,221,.6)}
+  .btn.danger{background:linear-gradient(135deg,#ffa3ad,var(--no));box-shadow:0 4px 0 rgba(255,143,156,.35)}
+  .err{color:var(--no);font-size:15px;font-weight:700;min-height:20px;margin-top:8px}
 
   .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
   .toolbar .spacer{flex:1}
-  .stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
-  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;min-width:120px}
-  .stat .k{font-size:12px;color:var(--muted)}
-  .stat .v{font-size:22px;font-weight:800;color:var(--teal)}
+  .stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+  .stat{background:var(--cream);border:3px solid #fff;border-radius:20px;padding:14px 20px;min-width:130px;box-shadow:0 6px 18px rgba(126,217,195,.14)}
+  .stat .k{font-size:14px;color:var(--muted);font-weight:700}
+  .stat .v{font-size:28px;color:var(--mint-deep)}
 
-  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-  th,td{padding:11px 14px;text-align:left;font-size:14px;border-bottom:1px solid var(--line)}
-  th{background:var(--teal-soft);color:var(--teal);font-weight:700}
+  table{width:100%;border-collapse:separate;border-spacing:0;background:var(--cream);border:3px solid #fff;border-radius:20px;overflow:hidden;box-shadow:0 8px 22px rgba(255,127,163,.1)}
+  th,td{padding:13px 16px;text-align:left;font-size:16px;border-bottom:2px solid var(--pink-soft);font-weight:700}
+  th{background:var(--mint-soft);color:var(--mint-deep)}
   tr:last-child td{border-bottom:none}
   td.num{font-variant-numeric:tabular-nums}
-  .rank1{font-weight:800;color:var(--gold)}
-  .empty{text-align:center;color:var(--muted);padding:30px}
-  .msg{color:var(--teal);font-size:14px;min-height:20px;margin-top:10px}
+  .rank1{color:var(--pink-deep);font-size:19px}
+  .empty{text-align:center;color:var(--muted);padding:34px;font-weight:700}
+  .msg{color:var(--mint-deep);font-size:15px;font-weight:700;min-height:20px;margin-top:10px}
   .hidden{display:none}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>📋 의학용어 게임 결과</h1>
-  <p class="sub">학생들의 제출 기록을 확인합니다. (학생별 최고점 기준)</p>
+  <h1>📋 의학용어 게임 결과 🌷</h1>
+  <p class="sub">학생들의 제출 기록을 확인해요! (학생별 최고점 기준)</p>
 
   <div class="login" id="login">
     <input id="code" type="password" placeholder="교수자 비밀번호" />
-    <button class="btn" id="loginBtn">확인</button>
+    <button class="btn" id="loginBtn">확인 🔑</button>
     <div class="err" id="loginErr"></div>
   </div>
 
@@ -63,9 +70,9 @@
         <option value="103">103분반</option>
       </select>
       <div class="spacer"></div>
-      <button class="btn ghost" id="refreshBtn">새로고침</button>
-      <button class="btn ghost" id="csvBtn">CSV 다운로드</button>
-      <button class="btn danger" id="resetBtn">기록 삭제</button>
+      <button class="btn ghost" id="refreshBtn">새로고침 🔄</button>
+      <button class="btn ghost" id="csvBtn">CSV 다운로드 📥</button>
+      <button class="btn danger" id="resetBtn">기록 삭제 🗑️</button>
     </div>
     <div id="tableWrap"></div>
     <div class="msg" id="msg"></div>
@@ -95,7 +102,7 @@ function login(){
 
 $("refreshBtn").onclick=()=>{
   fetch('/api/results?code='+encodeURIComponent(CODE))
-    .then(r=>r.json()).then(d=>{ DATA=d.list||[]; render(); $("msg").textContent="새로고침 완료"; });
+    .then(r=>r.json()).then(d=>{ DATA=d.list||[]; render(); $("msg").textContent="새로고침 완료 ✨"; });
 };
 $("classFilter").onchange=render;
 
@@ -127,7 +134,6 @@ function filtered(){
 
 function render(){
   const rows=filtered();
-  // 통계
   const n=rows.length;
   const avg=n? Math.round(rows.reduce((s,r)=>s+(r.score||0),0)/n*10)/10 : 0;
   const top=n? Math.max(...rows.map(r=>r.score||0)) : 0;
@@ -136,14 +142,13 @@ function render(){
     <div class="stat"><div class="k">평균 점수</div><div class="v">${avg}</div></div>
     <div class="stat"><div class="k">최고 점수</div><div class="v">${top}</div></div>
   `;
-  // 표
-  if(n===0){ $("tableWrap").innerHTML=`<div class="empty">아직 제출된 기록이 없습니다.</div>`; return; }
+  if(n===0){ $("tableWrap").innerHTML=`<div class="empty">아직 제출된 기록이 없어요 🌱</div>`; return; }
   let html=`<table><thead><tr>
     <th>순위</th><th>분반</th><th>이름</th><th>학번</th><th>점수</th><th>정답/총</th><th>시도</th><th>최종 제출</th>
   </tr></thead><tbody>`;
   rows.forEach((r,i)=>{
     html+=`<tr>
-      <td class="${i===0?'rank1':''}">${i+1}</td>
+      <td class="${i===0?'rank1':''}">${i===0?'👑 ':''}${i+1}</td>
       <td>${esc(r.classNo)}</td>
       <td>${esc(r.name)}</td>
       <td>${esc(r.sid)}</td>

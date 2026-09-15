@@ -4,95 +4,114 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>의학용어 게임</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Jua&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#1a2b3c; --paper:#f6f3ec; --card:#ffffff; --line:#e2ddd0; --muted:#8a8577;
-    --teal:#0f7d76; --teal-soft:#e3f2f0; --gold:#c98a1f; --gold-soft:#f6ecd6;
-    --ok:#1a8f6b; --ok-soft:#e0f3ea; --no:#c9433a; --no-soft:#fbe6e4;
+    --ink:#5a5568; --mint:#7ed9c3; --mint-soft:#dff7f0; --mint-deep:#3fbfa3;
+    --pink:#ffb3c9; --pink-soft:#ffe3ec; --pink-deep:#ff7fa3;
+    --yellow:#ffe08a; --yellow-soft:#fff6d9;
+    --cream:#fffaf3; --line:#f0e6dd; --muted:#a89f97;
+    --ok:#57c99a; --ok-soft:#e2f7ee; --no:#ff8f9c; --no-soft:#ffe6e9;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{
-    font-family:-apple-system,BlinkMacSystemFont,"Malgun Gothic","맑은 고딕",sans-serif;
-    background:var(--paper);color:var(--ink);min-height:100vh;
-    display:flex;align-items:center;justify-content:center;padding:20px;line-height:1.5;
+    font-family:'Gaegu','Malgun Gothic',sans-serif;
+    background:linear-gradient(135deg,#fff6d9 0%,#ffe3ec 50%,#dff7f0 100%);
+    background-attachment:fixed;
+    color:var(--ink);min-height:100vh;
+    display:flex;align-items:center;justify-content:center;padding:20px;line-height:1.55;
+    font-size:17px;
   }
   .card{
-    background:var(--card);width:100%;max-width:520px;border-radius:20px;
-    border:1px solid var(--line);box-shadow:0 12px 40px rgba(26,43,60,.08);overflow:hidden;
+    background:var(--cream);width:100%;max-width:520px;border-radius:32px;
+    border:3px solid #fff;
+    box-shadow:0 18px 50px rgba(255,127,163,.18), 0 4px 12px rgba(126,217,195,.15);
+    overflow:hidden;position:relative;
   }
+  .card::before{
+    content:"";position:absolute;top:-40px;right:-40px;width:120px;height:120px;
+    background:var(--yellow-soft);border-radius:50%;opacity:.6;z-index:0;
+  }
+  h1,h2,.prompt,.big,.btn,.qtag,.done .rank{font-family:'Jua',sans-serif;font-weight:400}
 
-  .top{padding:18px 24px 0}
+  .top{padding:20px 26px 0;position:relative;z-index:1}
   .progress-wrap{display:flex;align-items:center;gap:12px}
-  .progress-bar{flex:1;height:8px;background:var(--line);border-radius:99px;overflow:hidden}
-  .progress-fill{height:100%;background:var(--teal);width:0%;transition:width .35s ease}
-  .progress-txt{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
-  .score-pill{font-size:13px;font-weight:700;color:var(--teal);background:var(--teal-soft);padding:4px 12px;border-radius:99px}
+  .progress-bar{flex:1;height:14px;background:#fff;border:2px solid var(--pink-soft);border-radius:99px;overflow:hidden}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--pink),var(--mint));width:0%;transition:width .4s cubic-bezier(.34,1.56,.64,1);border-radius:99px}
+  .progress-txt{font-size:15px;color:var(--muted);font-weight:700;white-space:nowrap}
+  .score-pill{font-size:15px;font-weight:700;color:var(--mint-deep);background:var(--mint-soft);padding:5px 14px;border-radius:99px;border:2px solid #fff}
 
-  .body{padding:24px}
+  .body{padding:26px;position:relative;z-index:1}
 
   /* 참가 화면 */
-  .intro h1{font-size:26px;margin-bottom:8px;letter-spacing:-.5px}
-  .intro .lead{color:var(--muted);font-size:15px;margin-bottom:20px}
+  .intro{text-align:center}
+  .intro h1{font-size:32px;margin-bottom:6px;color:var(--pink-deep)}
+  .intro .lead{color:var(--muted);font-size:17px;margin-bottom:22px}
   input,select{
-    width:100%;padding:14px 16px;border:2px solid var(--line);border-radius:14px;
-    font-size:16px;background:#fbfdff;color:var(--ink);margin-bottom:12px;outline:none;font-family:inherit;
+    width:100%;padding:15px 18px;border:3px solid var(--pink-soft);border-radius:20px;
+    font-size:17px;background:#fff;color:var(--ink);margin-bottom:13px;outline:none;
+    font-family:'Gaegu',sans-serif;font-weight:700;transition:border-color .2s ease;
   }
-  input:focus,select:focus{border-color:var(--teal)}
-  .rules{background:var(--paper);border-radius:14px;padding:16px 18px;margin:8px 0 20px}
-  .rules .r{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;font-size:14px}
+  input::placeholder{color:#d3c9c0}
+  input:focus,select:focus{border-color:var(--pink)}
+  .rules{background:var(--mint-soft);border-radius:22px;padding:18px 20px;margin:6px 0 20px;text-align:left}
+  .rules .r{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;font-size:16px}
   .rules .r:last-child{margin-bottom:0}
-  .rules .ic{flex-shrink:0;width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
-  .ic.build{background:var(--teal-soft)}
-  .ic.choice{background:var(--gold-soft)}
-  .err{color:var(--no);font-size:14px;min-height:20px;margin-bottom:6px}
+  .rules .ic{flex-shrink:0;width:34px;height:34px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;background:#fff}
+  .err{color:var(--no);font-size:15px;font-weight:700;min-height:22px;margin-bottom:6px}
 
-  .qtag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.3px;padding:5px 12px;border-radius:99px;margin-bottom:14px}
-  .qtag.build{background:var(--teal-soft);color:var(--teal)}
-  .qtag.choice{background:var(--gold-soft);color:var(--gold)}
-  .prompt{font-size:22px;font-weight:700;margin-bottom:6px;letter-spacing:-.3px;line-height:1.35}
-  .hint{font-size:14px;color:var(--muted);margin-bottom:22px}
+  .qtag{display:inline-block;font-size:15px;padding:6px 16px;border-radius:99px;margin-bottom:14px;border:2px solid #fff}
+  .qtag.build{background:var(--mint-soft);color:var(--mint-deep)}
+  .qtag.choice{background:var(--yellow-soft);color:#d99b1a}
+  .prompt{font-size:27px;margin-bottom:6px;line-height:1.3;color:var(--ink)}
+  .hint{font-size:15px;color:var(--muted);margin-bottom:22px;font-weight:700}
 
-  .build-slot{min-height:60px;border:2px dashed var(--line);border-radius:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px;margin-bottom:8px}
-  .build-slot.empty::before{content:"여기에 조립됩니다";color:var(--muted);font-size:14px}
-  .slot-tile{background:var(--teal);color:#fff;font-weight:700;font-size:16px;padding:9px 15px;border-radius:10px;cursor:pointer;animation:pop .18s ease}
-  @keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
-  .slot-hint{font-size:12px;color:var(--muted);margin-bottom:16px}
-  .tiles{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
-  .tile{background:#fff;border:2px solid var(--teal);color:var(--teal);font-weight:700;font-size:16px;padding:10px 16px;border-radius:10px;cursor:pointer;transition:transform .1s ease,background .15s ease}
-  .tile:hover{background:var(--teal-soft)}
-  .tile:active{transform:translateY(2px)}
-  .tile.used{opacity:.3;pointer-events:none;text-decoration:line-through}
+  .build-slot{min-height:66px;border:3px dashed var(--pink-soft);border-radius:22px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px;margin-bottom:8px;background:#fff}
+  .build-slot.empty::before{content:"여기에 조립해요 ✨";color:#d3c9c0;font-size:16px;font-weight:700}
+  .slot-tile{background:linear-gradient(135deg,var(--mint),var(--mint-deep));color:#fff;font-weight:700;font-size:18px;padding:10px 17px;border-radius:16px;cursor:pointer;animation:pop .2s cubic-bezier(.34,1.56,.64,1);box-shadow:0 4px 0 rgba(63,191,163,.3)}
+  @keyframes pop{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+  @keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+  .slot-hint{font-size:14px;color:var(--muted);margin-bottom:16px;font-weight:700}
+  .tiles{display:flex;flex-wrap:wrap;gap:11px;margin-bottom:22px}
+  .tile{background:#fff;border:3px solid var(--mint);color:var(--mint-deep);font-weight:700;font-size:18px;padding:11px 18px;border-radius:16px;cursor:pointer;transition:transform .12s ease,background .15s ease;box-shadow:0 4px 0 rgba(126,217,195,.4)}
+  .tile:hover{background:var(--mint-soft);animation:wiggle .3s ease}
+  .tile:active{transform:translateY(4px);box-shadow:0 0 0 rgba(126,217,195,.4)}
+  .tile.used{opacity:.3;pointer-events:none;text-decoration:line-through;box-shadow:none}
 
-  .choices{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
-  .choice{text-align:left;background:#fff;border:2px solid var(--line);border-radius:12px;padding:14px 16px;font-size:16px;color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:12px;transition:border-color .15s ease,background .15s ease;font-family:inherit}
-  .choice:hover{border-color:var(--gold)}
-  .choice .num{flex-shrink:0;width:26px;height:26px;border-radius:7px;background:var(--paper);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--muted)}
+  .choices{display:flex;flex-direction:column;gap:12px;margin-bottom:22px}
+  .choice{text-align:left;background:#fff;border:3px solid var(--pink-soft);border-radius:20px;padding:15px 18px;font-size:17px;color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:12px;transition:transform .12s ease,border-color .15s ease;font-family:'Gaegu',sans-serif;font-weight:700}
+  .choice:hover{border-color:var(--pink);transform:translateX(3px)}
+  .choice .num{flex-shrink:0;width:32px;height:32px;border-radius:12px;background:var(--pink-soft);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:var(--pink-deep)}
   .choice.correct{border-color:var(--ok);background:var(--ok-soft)}
   .choice.correct .num{background:var(--ok);color:#fff}
   .choice.wrong{border-color:var(--no);background:var(--no-soft)}
   .choice.wrong .num{background:var(--no);color:#fff}
   .choice.locked{pointer-events:none}
-  .choice.dim{opacity:.5}
+  .choice.dim{opacity:.45}
 
-  .btn{width:100%;border:none;border-radius:12px;padding:15px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:transform .1s ease,opacity .15s ease}
-  .btn:active{transform:translateY(2px)}
-  .btn-primary{background:var(--teal);color:#fff}
-  .btn-gold{background:var(--gold);color:#fff}
-  .btn:disabled{opacity:.4;pointer-events:none}
+  .btn{width:100%;border:none;border-radius:20px;padding:16px;font-size:20px;cursor:pointer;font-family:'Jua',sans-serif;transition:transform .12s ease;color:#fff}
+  .btn:active{transform:translateY(3px)}
+  .btn-primary{background:linear-gradient(135deg,var(--pink),var(--pink-deep));box-shadow:0 5px 0 rgba(255,127,163,.35)}
+  .btn-primary:active{box-shadow:0 1px 0 rgba(255,127,163,.35)}
+  .btn-gold{background:linear-gradient(135deg,var(--mint),var(--mint-deep));box-shadow:0 5px 0 rgba(63,191,163,.3)}
+  .btn-gold:active{box-shadow:0 1px 0 rgba(63,191,163,.3)}
+  .btn:disabled{opacity:.4;pointer-events:none;box-shadow:none}
 
-  .fb{border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:15px;animation:pop .2s ease}
-  .fb.ok{background:var(--ok-soft);color:var(--ok)}
-  .fb.no{background:var(--no-soft);color:var(--no)}
+  .fb{border-radius:20px;padding:15px 18px;margin-bottom:16px;font-size:16px;font-weight:700;animation:pop .25s cubic-bezier(.34,1.56,.64,1)}
+  .fb.ok{background:var(--ok-soft);color:#3ba578}
+  .fb.no{background:var(--no-soft);color:#e56370}
   .fb b{color:var(--ink)}
-  .fb-title{font-weight:700;margin-bottom:2px}
+  .fb-title{font-family:'Jua',sans-serif;font-size:19px;margin-bottom:2px}
 
   .done{text-align:center;padding:10px 0}
-  .done .emoji{font-size:60px;display:block;margin-bottom:10px}
-  .done .big{font-size:40px;font-weight:800;color:var(--teal);margin-bottom:4px;font-variant-numeric:tabular-nums}
-  .done .sub{color:var(--muted);font-size:15px;margin-bottom:8px}
-  .done .who{font-size:14px;color:var(--muted);margin-bottom:16px}
-  .done .rank{font-size:18px;font-weight:700;margin-bottom:10px}
-  .submitMsg{font-size:14px;color:var(--ok);min-height:22px;margin-bottom:16px}
+  .done .emoji{font-size:70px;display:block;margin-bottom:8px;animation:wiggle 1s ease infinite}
+  .done .big{font-size:48px;margin-bottom:4px;color:var(--pink-deep)}
+  .done .sub{color:var(--muted);font-size:17px;margin-bottom:8px;font-weight:700}
+  .done .who{font-size:16px;color:var(--muted);margin-bottom:16px;font-weight:700;background:var(--yellow-soft);display:inline-block;padding:6px 16px;border-radius:99px}
+  .done .rank{font-size:22px;margin-bottom:12px;color:var(--mint-deep)}
+  .submitMsg{font-size:15px;color:var(--ok);font-weight:700;min-height:24px;margin-bottom:16px}
   .hidden{display:none}
 </style>
 </head>
@@ -111,22 +130,22 @@
 
     <!-- 참가 화면 -->
     <div id="intro" class="intro">
-      <h1>🩺 의학용어 게임</h1>
-      <p class="lead">이름·학번·분반을 입력하고 시작하세요.</p>
+      <h1>🩺 의학용어 게임 🧸</h1>
+      <p class="lead">이름·학번·분반을 적고 시작해요!</p>
       <input id="name" placeholder="이름" maxlength="20" />
       <input id="sid" placeholder="학번" maxlength="20" />
       <select id="classNo">
-        <option value="">분반 선택</option>
+        <option value="">분반을 골라요</option>
         <option value="101">101</option>
         <option value="102">102</option>
         <option value="103">103</option>
       </select>
       <div class="rules">
-        <div class="r"><div class="ic build">🧩</div><div><b>조립 문제</b> — 한글 뜻을 보고 어근·연결모음·접미사 타일을 순서대로 눌러 영어 용어를 만드세요.</div></div>
-        <div class="r"><div class="ic choice">✅</div><div><b>객관식 문제</b> — 네 개의 보기 중 정답을 하나 고르세요.</div></div>
+        <div class="r"><div class="ic">🧩</div><div><b>조립 문제</b> — 한글 뜻을 보고 어근·연결모음·접미사 타일을 순서대로 눌러 영어 용어를 만들어요!</div></div>
+        <div class="r"><div class="ic">✅</div><div><b>객관식 문제</b> — 네 개의 보기 중 정답을 하나 골라요!</div></div>
       </div>
       <div class="err" id="err"></div>
-      <button class="btn btn-primary" id="startBtn">시작하기</button>
+      <button class="btn btn-primary" id="startBtn">시작하기 🚀</button>
     </div>
 
     <div id="quiz" class="hidden"></div>
@@ -139,15 +158,15 @@
 const BUILD = [
   { meaning:"백혈구",   answer:["leuk","o","cyte"],    distractors:["oste","gastr","itis","ectomy"] },
   { meaning:"적혈구",   answer:["erythr","o","cyte"],  distractors:["oste","gastr","itis","ectomy"] },
-  { meaning:"신장염",   answer:["nephr","itis"],       distractors:["oste","gastr","otomy","pathy"] },
+  { meaning:"신장염",   answer:["nephr","itis"],       distractors:["o","gastr","otomy","pathy"] },
   { meaning:"신경병증", answer:["neur","o","pathy"],   distractors:["oste","gastr","itis","ectomy"] },
   { meaning:"피부질환", answer:["dermat","o","pathy"], distractors:["oste","gastr","itis","ectomy"] },
   { meaning:"간비대",   answer:["hepat","o","megaly"], distractors:["oste","gastr","itis","ectomy"] },
-  { meaning:"심장비대", answer:["cardi","megaly"],     distractors:["oste","gastr","itis","pathy"] },
-  { meaning:"관절염",   answer:["arthr","itis"],       distractors:["oste","gastr","megaly","pathy"] },
-  { meaning:"위절제술", answer:["gastr","ectomy"],     distractors:["oste","arthr","itis","pathy"] },
-  { meaning:"신장질환", answer:["nephr","pathy"],      distractors:["oste","gastr","itis","ectomy"] },
-  { meaning:"신경통",   answer:["neur","algia"],       distractors:["oste","gastr","itis","ectomy"] },
+  { meaning:"심장비대", answer:["cardi","megaly"],     distractors:["o","gastr","itis","pathy"] },
+  { meaning:"관절염",   answer:["arthr","itis"],       distractors:["o","gastr","megaly","pathy"] },
+  { meaning:"위절제술", answer:["gastr","ectomy"],     distractors:["o","arthr","itis","pathy"] },
+  { meaning:"신장질환", answer:["nephr","pathy"],      distractors:["o","gastr","itis","ectomy"] },
+  { meaning:"신경통",   answer:["neur","algia"],       distractors:["o","gastr","itis","ectomy"] },
 ];
 
 const CHOICE = [
@@ -199,7 +218,7 @@ const $intro=$("intro"), $quiz=$("quiz"), $result=$("result"), $top=$("top");
 
 $("startBtn").onclick=()=>{
   const name=$("name").value.trim(), sid=$("sid").value.trim(), classNo=$("classNo").value;
-  if(!name||!sid||!classNo){ $("err").textContent="이름, 학번, 분반을 모두 입력하세요."; return; }
+  if(!name||!sid||!classNo){ $("err").textContent="이름, 학번, 분반을 모두 적어주세요! 🥺"; return; }
   student={name,sid,classNo};
   buildQuizList(); current=0; score=0;
   $intro.classList.add("hidden"); $result.classList.add("hidden");
@@ -228,12 +247,12 @@ function renderBuild(q){
   $quiz.innerHTML=`
     <span class="qtag build">🧩 조립 문제</span>
     <div class="prompt">${q.meaning}</div>
-    <div class="hint">올바른 타일을 순서대로 눌러 영어 용어를 조립하세요. (함정 타일 주의!)</div>
+    <div class="hint">올바른 타일을 순서대로 눌러 조립해요! (함정 타일 조심 🙈)</div>
     <div class="build-slot empty" id="slot"></div>
-    <div class="slot-hint">조립된 타일을 누르면 다시 뺄 수 있어요.</div>
+    <div class="slot-hint">조립한 타일을 누르면 다시 뺄 수 있어요 ↩️</div>
     <div class="tiles" id="tiles"></div>
     <div id="fbArea"></div>
-    <button class="btn btn-primary" id="checkBtn" disabled>정답 확인</button>
+    <button class="btn btn-primary" id="checkBtn" disabled>정답 확인 🔍</button>
   `;
   const $slot=$("slot"), $tiles=$("tiles"), $check=$("checkBtn");
 
@@ -265,8 +284,8 @@ function renderBuild(q){
     [...$slot.children].forEach(c=>c.style.pointerEvents="none");
     const correctWord=q.answer.join(""), madeWord=made.join("");
     $("fbArea").innerHTML = correct
-      ? `<div class="fb ok"><div class="fb-title">정답입니다! 🎉</div><b>${correctWord}</b> = ${q.answer.join(" + ")}</div>`
-      : `<div class="fb no"><div class="fb-title">아쉬워요</div>내 답: ${madeWord||"—"} · 정답: <b>${correctWord}</b> (${q.answer.join(" + ")})</div>`;
+      ? `<div class="fb ok"><div class="fb-title">정답이에요! 🎉</div><b>${correctWord}</b> = ${q.answer.join(" + ")}</div>`
+      : `<div class="fb no"><div class="fb-title">아쉬워요 🥲</div>내 답: ${madeWord||"—"} · 정답: <b>${correctWord}</b> (${q.answer.join(" + ")})</div>`;
     swapToNext($check);
   };
 }
@@ -276,10 +295,10 @@ function renderChoice(q){
   $quiz.innerHTML=`
     <span class="qtag choice">✅ 객관식 문제</span>
     <div class="prompt">${q.prompt}</div>
-    <div class="hint">정답이라고 생각하는 보기를 하나 고르세요.</div>
+    <div class="hint">정답이라고 생각하는 보기를 하나 골라요!</div>
     <div class="choices" id="choices"></div>
     <div id="fbArea"></div>
-    <button class="btn btn-gold hidden" id="nextBtn">다음 문제</button>
+    <button class="btn btn-gold hidden" id="nextBtn">다음 문제 ➡️</button>
   `;
   const $choices=$("choices"), numLabels=["①","②","③","④","⑤"];
   order.forEach((opt,idx)=>{
@@ -297,11 +316,11 @@ function renderChoice(q){
       });
       const correctText=order.find(o=>o.correct).text;
       $("fbArea").innerHTML = opt.correct
-        ? `<div class="fb ok"><div class="fb-title">정답입니다! 🎉</div>잘하셨어요.</div>`
-        : `<div class="fb no"><div class="fb-title">아쉬워요</div>정답: <b>${correctText}</b></div>`;
+        ? `<div class="fb ok"><div class="fb-title">정답이에요! 🎉</div>잘했어요!</div>`
+        : `<div class="fb no"><div class="fb-title">아쉬워요 🥲</div>정답: <b>${correctText}</b></div>`;
       const $next=$("nextBtn");
       $next.classList.remove("hidden");
-      $next.textContent = isLast() ? "결과 보기" : "다음 문제";
+      $next.textContent = isLast() ? "결과 보기 🎁" : "다음 문제 ➡️";
       $next.onclick=goNext;
       updateTop();
     };
@@ -312,7 +331,7 @@ function renderChoice(q){
 function isLast(){ return current>=quizList.length-1; }
 function swapToNext(btn){
   updateTop();
-  btn.textContent = isLast() ? "결과 보기" : "다음 문제";
+  btn.textContent = isLast() ? "결과 보기 🎁" : "다음 문제 ➡️";
   btn.className="btn btn-gold"; btn.disabled=false; btn.onclick=goNext;
 }
 function goNext(){ current++; if(current>=quizList.length) showResult(); else renderQuestion(); }
@@ -321,11 +340,11 @@ function showResult(){
   $quiz.classList.add("hidden"); $top.classList.add("hidden"); $result.classList.remove("hidden");
   const total=quizList.length, pct=Math.round(score/total*100);
   let emoji,rank;
-  if(pct===100){emoji="🏆";rank="완벽해요! 의학용어 마스터";}
-  else if(pct>=80){emoji="🎉";rank="훌륭해요!";}
-  else if(pct>=60){emoji="👍";rank="잘했어요!";}
-  else if(pct>=40){emoji="💪";rank="조금만 더!";}
-  else{emoji="📚";rank="복습이 필요해요";}
+  if(pct===100){emoji="🏆";rank="완벽해요! 의학용어 마스터 👑";}
+  else if(pct>=80){emoji="🎉";rank="훌륭해요! 🌟";}
+  else if(pct>=60){emoji="😊";rank="잘했어요! 👍";}
+  else if(pct>=40){emoji="💪";rank="조금만 더 힘내요!";}
+  else{emoji="📚";rank="복습하러 가볼까요?";}
 
   $result.innerHTML=`
     <div class="done">
@@ -334,8 +353,8 @@ function showResult(){
       <div class="sub">정답률 ${pct}%</div>
       <div class="who">${student.name} · ${student.sid} · ${student.classNo}분반</div>
       <div class="rank">${rank}</div>
-      <div class="submitMsg" id="submitMsg">제출 중…</div>
-      <button class="btn btn-primary" id="againBtn">다시 도전하기</button>
+      <div class="submitMsg" id="submitMsg">제출 중… 📮</div>
+      <button class="btn btn-primary" id="againBtn">다시 도전하기 🔄</button>
     </div>
   `;
   $("againBtn").onclick=()=>{
@@ -356,8 +375,8 @@ function submit(){
     })
   })
   .then(r=>r.json())
-  .then(d=>{ $("submitMsg").textContent = d.ok ? "✅ 제출 완료 (선생님이 확인할 수 있어요)" : "제출 실패 - 다시 시도해주세요"; })
-  .catch(()=>{ $("submitMsg").textContent="제출 저장 실패 - 네트워크를 확인해주세요"; });
+  .then(d=>{ $("submitMsg").textContent = d.ok ? "✅ 제출 완료! 선생님이 확인할 수 있어요" : "제출 실패 😢 다시 시도해주세요"; })
+  .catch(()=>{ $("submitMsg").textContent="제출 저장 실패 😢 네트워크를 확인해주세요"; });
 }
 </script>
 </body>
