@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Jua&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root{
     --ink:#2d2a3e; --mint:#20c9a6; --mint-soft:#c5f3e9; --mint-deep:#009e82;
@@ -22,6 +23,16 @@
   h1,.btn,.stat .v{font-family:'Jua',sans-serif}
 
   .login{background:var(--cream);border:3px solid var(--pink);border-radius:26px;padding:26px;max-width:400px;box-shadow:0 12px 34px rgba(230,51,122,.18)}
+
+  .qrcard{background:var(--cream);border:3px solid var(--mint);border-radius:26px;padding:22px 26px;margin-bottom:20px;display:flex;gap:24px;align-items:center;flex-wrap:wrap;box-shadow:0 10px 30px rgba(32,201,166,.16)}
+  .qr-left{flex:1;min-width:200px}
+  .qr-title{font-family:'Jua',sans-serif;font-size:22px;color:var(--mint-deep);margin-bottom:8px}
+  .qr-desc{font-size:15px;color:var(--ink);font-weight:500;line-height:1.5;margin-bottom:12px}
+  .qr-url{font-size:14px;color:var(--pink-deep);font-weight:700;word-break:break-all;background:var(--pink-soft);padding:8px 12px;border-radius:12px;display:inline-block}
+  .qr-right{flex-shrink:0}
+  #qrbox{background:#fff;padding:14px;border-radius:18px;border:3px solid var(--mint-soft);width:172px;height:172px;display:flex;align-items:center;justify-content:center}
+  #qrbox img,#qrbox canvas{display:block}
+  .qr-loading{font-size:13px;color:var(--muted);font-weight:700;text-align:center}
   input,select{padding:13px 16px;border:3px solid var(--pink);border-radius:16px;font-size:16px;background:#fff;color:var(--ink);outline:none;font-family:'Noto Sans KR',sans-serif;font-weight:700}
   input:focus,select:focus{border-color:var(--pink-deep)}
   .login input{width:100%;margin-bottom:12px}
@@ -46,6 +57,7 @@
   .rank1{color:var(--pink-deep);font-size:19px;font-weight:900}
   .empty{text-align:center;color:var(--muted);padding:34px;font-weight:700}
   .msg{color:var(--mint-deep);font-size:15px;font-weight:700;min-height:20px;margin-top:10px}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
   .hidden{display:none}
 </style>
 </head>
@@ -54,6 +66,17 @@
   <h1>📋 의학용어 게임 결과 🌷</h1>
   <p class="sub">학생들의 제출 기록을 확인해요! (학생별 최고점 기준)</p>
 
+  <div class="qrcard">
+    <div class="qr-left">
+      <div class="qr-title">📱 학생 접속용 QR</div>
+      <div class="qr-desc">학생들이 휴대폰 카메라로 이 QR을 찍으면<br>바로 게임에 접속해요!</div>
+      <div class="qr-url" id="qrUrl"></div>
+    </div>
+    <div class="qr-right">
+      <div id="qrbox"><div class="qr-loading">QR 생성 중…</div></div>
+    </div>
+  </div>
+
   <div class="login" id="login">
     <input id="code" type="password" placeholder="교수자 비밀번호" />
     <button class="btn" id="loginBtn">확인 🔑</button>
@@ -61,6 +84,9 @@
   </div>
 
   <div id="dash" class="hidden">
+    <div style="text-align:right;font-size:14px;color:var(--mint-deep);font-weight:700;margin-bottom:8px">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--mint-deep);margin-right:5px;animation:blink 1.2s ease infinite"></span>5초마다 자동 갱신 중
+    </div>
     <div class="stats" id="stats"></div>
     <div class="toolbar">
       <select id="classFilter">
@@ -83,6 +109,30 @@
 const $=id=>document.getElementById(id);
 let CODE="", DATA=[];
 
+// ── 학생 접속용 QR 생성 ──
+(function makeQR(){
+  // 현재 교수자 페이지 주소에서 학생 화면 주소를 자동 계산 (…/teacher.html → …/)
+  let base = location.origin + location.pathname.replace(/teacher\.html$/,'').replace(/\/$/,'') + '/';
+  // 로컬에서 파일로 열어본 경우엔 배포 주소를 기본값으로
+  if(location.protocol==='file:' || !location.origin.startsWith('http')){
+    base='https://build-game-01.onrender.com/';
+  }
+  $("qrUrl").textContent=base;
+  const box=$("qrbox");
+  function render(){
+    if(typeof QRCode==='undefined'){
+      // 라이브러리 로드 실패 시: 외부 QR 이미지 서비스로 대체
+      box.innerHTML=`<img width="144" height="144" alt="QR" src="https://api.qrserver.com/v1/create-qr-code/?size=144x144&data=${encodeURIComponent(base)}">`;
+      return;
+    }
+    box.innerHTML="";
+    new QRCode(box, { text: base, width:144, height:144, colorDark:"#2d2a3e", colorLight:"#ffffff" });
+  }
+  // 스크립트가 늦게 로드될 수 있으니 약간 지연 후 시도
+  if(document.readyState==='complete') render();
+  else window.addEventListener('load', ()=>setTimeout(render,100));
+})();
+
 $("loginBtn").onclick=login;
 $("code").addEventListener("keydown",e=>{ if(e.key==="Enter") login(); });
 
@@ -96,8 +146,19 @@ function login(){
       $("login").classList.add("hidden");
       $("dash").classList.remove("hidden");
       render();
+      startAutoRefresh();
     })
     .catch(()=>{ $("loginErr").textContent="비밀번호가 올바르지 않습니다."; });
+}
+
+let autoTimer=null;
+function startAutoRefresh(){
+  if(autoTimer) clearInterval(autoTimer);
+  autoTimer=setInterval(()=>{
+    fetch('/api/results?code='+encodeURIComponent(CODE))
+      .then(r=>r.json()).then(d=>{ DATA=d.list||[]; render(); })
+      .catch(()=>{});
+  }, 5000);  // 5초마다 자동 갱신
 }
 
 $("refreshBtn").onclick=()=>{

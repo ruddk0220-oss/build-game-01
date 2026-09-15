@@ -63,6 +63,17 @@
   .rules .ic{flex-shrink:0;width:34px;height:34px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;background:#fff}
   .err{color:var(--no);font-size:15px;font-weight:700;min-height:22px;margin-bottom:6px}
 
+  /* 이어하기 배너 */
+  .resume{background:var(--yellow-soft);border:3px solid var(--yellow);border-radius:20px;padding:16px 18px;margin-bottom:16px;text-align:left}
+  .resume .r-msg{font-size:15px;color:#7a4e00;font-weight:700;margin-bottom:12px;line-height:1.4}
+  .resume .r-msg b{color:var(--pink-deep)}
+  .resume .r-btns{display:flex;gap:10px}
+  .resume .r-btns .btn{padding:12px;font-size:16px}
+  .btn-resume{background:var(--mint-deep);box-shadow:0 4px 0 #007a66}
+  .btn-resume:active{box-shadow:0 1px 0 #007a66}
+  .btn-new{background:#fff;color:var(--muted);border:2px solid var(--line);box-shadow:0 4px 0 var(--line)}
+  .btn-new:active{box-shadow:0 1px 0 var(--line)}
+
   .qtag{display:inline-block;font-size:15px;padding:6px 16px;border-radius:99px;margin-bottom:14px;font-weight:900}
   .qtag.build{background:var(--mint-deep);color:#fff}
   .qtag.choice{background:var(--yellow);color:#7a4e00}
@@ -113,6 +124,27 @@
   .done .who{font-size:16px;color:#7a4e00;margin-bottom:16px;font-weight:700;background:var(--yellow);display:inline-block;padding:6px 16px;border-radius:99px}
   .done .rank{font-size:22px;margin-bottom:12px;color:var(--mint-deep)}
   .submitMsg{font-size:15px;color:var(--mint-deep);font-weight:700;min-height:24px;margin-bottom:16px}
+
+  /* 리더보드 */
+  .lb{background:#fff;border:3px solid var(--yellow);border-radius:22px;padding:16px 14px;margin-bottom:18px;text-align:left}
+  .lb-title{font-family:'Jua',sans-serif;font-size:20px;color:#7a4e00;text-align:center;margin-bottom:4px}
+  .lb-live{text-align:center;font-size:13px;color:var(--mint-deep);font-weight:700;margin-bottom:12px}
+  .lb-live .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--mint-deep);margin-right:5px;animation:blink 1.2s ease infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  .lb-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:14px;margin-bottom:6px;font-weight:700;font-size:15px}
+  .lb-row:last-child{margin-bottom:0}
+  .lb-row .r-rank{flex-shrink:0;width:30px;text-align:center;font-family:'Jua',sans-serif;font-size:17px;color:var(--muted)}
+  .lb-row .r-name{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lb-row .r-cls{flex-shrink:0;font-size:12px;color:var(--muted);background:var(--mint-soft);padding:2px 8px;border-radius:99px}
+  .lb-row .r-score{flex-shrink:0;font-family:'Jua',sans-serif;color:var(--mint-deep)}
+  .lb-row.top1{background:linear-gradient(135deg,#fff3cc,#ffe38a);border:2px solid var(--yellow)}
+  .lb-row.top1 .r-rank{color:#d99b00}
+  .lb-row.top2{background:#eef1f5}
+  .lb-row.top3{background:#f7eee6}
+  .lb-row.me{background:var(--pink-soft);border:2px solid var(--pink);box-shadow:0 2px 8px rgba(230,51,122,.15)}
+  .lb-row.me .r-name{color:var(--pink-deep);font-weight:900}
+  .lb-row.me .r-name::after{content:" (나)";font-size:12px;color:var(--pink-deep)}
+  .lb-empty{text-align:center;color:var(--muted);font-weight:700;padding:14px}
   .hidden{display:none}
 </style>
 </head>
@@ -133,6 +165,7 @@
     <div id="intro" class="intro">
       <h1>🩺 의학용어 게임 🧸</h1>
       <p class="lead">이름·학번·분반을 적고 시작해요!</p>
+      <div id="resumeBox" class="hidden"></div>
       <input id="name" placeholder="이름" maxlength="20" />
       <input id="sid" placeholder="학번" maxlength="20" />
       <select id="classNo">
@@ -214,6 +247,31 @@ function buildQuizList(){
   quizList=shuffle([...b,...c]);
 }
 
+// ── 이어하기: 진행상황 저장/복원 ──
+const SAVE_KEY="medgame_progress_v1";
+function saveProgress(){
+  try{
+    const data={ student, quizList, current, score, answered, finished:false };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  }catch(e){}
+}
+function markFinished(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(raw){ const d=JSON.parse(raw); d.finished=true; localStorage.setItem(SAVE_KEY, JSON.stringify(d)); }
+  }catch(e){}
+}
+function clearProgress(){ try{ localStorage.removeItem(SAVE_KEY); }catch(e){} }
+function loadProgress(){
+  try{
+    const raw=localStorage.getItem(SAVE_KEY);
+    if(!raw) return null;
+    const d=JSON.parse(raw);
+    if(!d.student || !Array.isArray(d.quizList)) return null;
+    return d;
+  }catch(e){ return null; }
+}
+
 const $=id=>document.getElementById(id);
 const $intro=$("intro"), $quiz=$("quiz"), $result=$("result"), $top=$("top");
 
@@ -221,11 +279,20 @@ $("startBtn").onclick=()=>{
   const name=$("name").value.trim(), sid=$("sid").value.trim(), classNo=$("classNo").value;
   if(!name||!sid||!classNo){ $("err").textContent="이름, 학번, 분반을 모두 적어주세요! 🥺"; return; }
   student={name,sid,classNo};
-  buildQuizList(); current=0; score=0;
+  buildQuizList(); current=0; score=0; answered=false;
+  saveProgress();
   $intro.classList.add("hidden"); $result.classList.add("hidden");
   $quiz.classList.remove("hidden"); $top.classList.remove("hidden");
   renderQuestion();
 };
+
+// 저장된 진행상황이 있으면 이어하기
+function resumeGame(d){
+  student=d.student; quizList=d.quizList; current=d.current||0; score=d.score||0; answered=false;
+  $intro.classList.add("hidden"); $result.classList.add("hidden");
+  $quiz.classList.remove("hidden"); $top.classList.remove("hidden");
+  renderQuestion();
+}
 
 function updateTop(){
   const total=quizList.length;
@@ -324,6 +391,7 @@ function renderChoice(q){
       $next.textContent = isLast() ? "결과 보기 🎁" : "다음 문제 ➡️";
       $next.onclick=goNext;
       updateTop();
+      saveProgress();
     };
     $choices.appendChild(b);
   });
@@ -331,13 +399,15 @@ function renderChoice(q){
 
 function isLast(){ return current>=quizList.length-1; }
 function swapToNext(btn){
+  answered=true; saveProgress();
   updateTop();
   btn.textContent = isLast() ? "결과 보기 🎁" : "다음 문제 ➡️";
   btn.className="btn btn-gold"; btn.disabled=false; btn.onclick=goNext;
 }
-function goNext(){ current++; if(current>=quizList.length) showResult(); else renderQuestion(); }
+function goNext(){ current++; answered=false; saveProgress(); if(current>=quizList.length) showResult(); else renderQuestion(); }
 
 function showResult(){
+  markFinished();
   $quiz.classList.add("hidden"); $top.classList.add("hidden"); $result.classList.remove("hidden");
   const total=quizList.length, pct=Math.round(score/total*100);
   let emoji,rank;
@@ -355,16 +425,78 @@ function showResult(){
       <div class="who">${student.name} · ${student.sid} · ${student.classNo}분반</div>
       <div class="rank">${rank}</div>
       <div class="submitMsg" id="submitMsg">제출 중… 📮</div>
+
+      <div class="lb" id="lb">
+        <div class="lb-title">🏆 실시간 순위</div>
+        <div class="lb-live"><span class="dot"></span>자동으로 갱신돼요</div>
+        <div id="lbList"><div class="lb-empty">순위를 불러오는 중… ⏳</div></div>
+      </div>
+
       <button class="btn btn-primary" id="againBtn">다시 도전하기 🔄</button>
     </div>
   `;
   $("againBtn").onclick=()=>{
-    buildQuizList(); current=0; score=0;
+    stopLeaderboard();
+    buildQuizList(); current=0; score=0; answered=false;
+    saveProgress();
     $result.classList.add("hidden"); $quiz.classList.remove("hidden"); $top.classList.remove("hidden");
     renderQuestion();
   };
   submit();
 }
+
+let lbTimer=null;
+function startLeaderboard(){
+  fetchLeaderboard();
+  stopLeaderboard();
+  lbTimer=setInterval(fetchLeaderboard, 3000);  // 3초마다 자동 갱신
+}
+function stopLeaderboard(){ if(lbTimer){ clearInterval(lbTimer); lbTimer=null; } }
+
+function fetchLeaderboard(){
+  fetch('/api/leaderboard')
+    .then(r=>r.json())
+    .then(d=>renderLeaderboard(d.list||[]))
+    .catch(()=>{});
+}
+
+function renderLeaderboard(list){
+  const el=$("lbList");
+  if(!el) { stopLeaderboard(); return; }
+  if(list.length===0){ el.innerHTML=`<div class="lb-empty">아직 순위가 없어요 🌱</div>`; return; }
+  const medals=["🥇","🥈","🥉"];
+  // 내 기록 찾기 (이름+학번뒤2자리+분반 일치)
+  const myTail = student.sid ? String(student.sid).slice(-2) : '';
+  const top = list.slice(0, 10);
+  let html="";
+  top.forEach(r=>{
+    const isMe = r.name===student.name && r.sidTail===myTail && String(r.classNo)===String(student.classNo);
+    const cls = "lb-row"+(r.rank===1?" top1":r.rank===2?" top2":r.rank===3?" top3":"")+(isMe?" me":"");
+    const rankLabel = r.rank<=3 ? medals[r.rank-1] : r.rank;
+    html+=`<div class="${cls}">
+      <span class="r-rank">${rankLabel}</span>
+      <span class="r-name">${esc(r.name)}</span>
+      <span class="r-cls">${esc(r.classNo)}</span>
+      <span class="r-score">${r.score}점</span>
+    </div>`;
+  });
+  // 내가 TOP10 밖이면 맨 아래에 내 순위 따로 표시
+  const meInTop = top.some(r=>r.name===student.name && r.sidTail===myTail && String(r.classNo)===String(student.classNo));
+  if(!meInTop){
+    const mine = list.find(r=>r.name===student.name && r.sidTail===myTail && String(r.classNo)===String(student.classNo));
+    if(mine){
+      html+=`<div class="lb-row me" style="margin-top:8px">
+        <span class="r-rank">${mine.rank}</span>
+        <span class="r-name">${esc(mine.name)}</span>
+        <span class="r-cls">${esc(mine.classNo)}</span>
+        <span class="r-score">${mine.score}점</span>
+      </div>`;
+    }
+  }
+  el.innerHTML=html;
+}
+
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
 function submit(){
   fetch('/api/submit',{
@@ -376,9 +508,41 @@ function submit(){
     })
   })
   .then(r=>r.json())
-  .then(d=>{ $("submitMsg").textContent = d.ok ? "✅ 제출 완료! 선생님이 확인할 수 있어요" : "제출 실패 😢 다시 시도해주세요"; })
-  .catch(()=>{ $("submitMsg").textContent="제출 저장 실패 😢 네트워크를 확인해주세요"; });
+  .then(d=>{
+    $("submitMsg").textContent = d.ok ? "✅ 제출 완료! 선생님이 확인할 수 있어요" : "제출 실패 😢 다시 시도해주세요";
+    startLeaderboard();  // 제출 후 순위 자동 갱신 시작
+  })
+  .catch(()=>{
+    $("submitMsg").textContent="제출 저장 실패 😢 네트워크를 확인해주세요";
+    startLeaderboard();  // 실패해도 순위는 보여줌
+  });
 }
+
+// ── 페이지 로드 시: 저장된 진행상황이 있으면 이어하기 배너 표시 ──
+(function checkResume(){
+  const d=loadProgress();
+  if(!d || d.finished) return;  // 없거나 이미 끝낸 게임이면 무시
+  const done=d.current||0, total=(d.quizList||[]).length||22;
+  const box=$("resumeBox");
+  box.className="resume";
+  box.innerHTML=`
+    <div class="r-msg"><b>${esc(d.student.name)}</b>님, 풀던 게임이 있어요!<br>
+    ${done}번째 문제까지 진행했어요 (현재 ${d.score||0}점). 이어서 할까요?</div>
+    <div class="r-btns">
+      <button class="btn btn-resume" id="resumeBtn">이어하기 ▶️</button>
+      <button class="btn btn-new" id="newBtn">새로 시작</button>
+    </div>
+  `;
+  $("resumeBtn").onclick=()=>resumeGame(d);
+  $("newBtn").onclick=()=>{
+    clearProgress();
+    box.className="hidden"; box.innerHTML="";
+    // 저장돼 있던 이름·학번·분반을 입력창에 미리 채워줌 (편의)
+    if(d.student){ $("name").value=d.student.name||""; $("sid").value=d.student.sid||""; $("classNo").value=d.student.classNo||""; }
+  };
+  // 이어하기 배너가 있을 때도 이름은 미리 채워두면 편함
+  if(d.student){ $("name").value=d.student.name||""; $("sid").value=d.student.sid||""; $("classNo").value=d.student.classNo||""; }
+})();
 </script>
 </body>
 </html>
