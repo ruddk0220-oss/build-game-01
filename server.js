@@ -55,6 +55,34 @@ app.post('/api/submit', (req, res) => {
   res.json({ ok: true });
 });
 
+// ── 게임 중 실시간 진행 점수 (매 문제마다 호출) ──
+app.post('/api/progress', (req, res) => {
+  const { name, sid, classNo, score, current, total, playing } = req.body || {};
+  if (!name || !sid) return res.status(400).json({ ok: false, error: 'invalid' });
+  const data = loadData();
+  const key = sid + '|' + name;
+  const now = new Date().toISOString();
+  const prev = data[key] || {};
+  data[key] = {
+    name, sid, classNo: classNo || prev.classNo || '',
+    // 최종 최고점(score)은 건드리지 않고, 진행 중 값은 별도 필드에 저장
+    score: prev.score || 0,
+    correct: prev.correct, total: prev.total,
+    attempts: prev.attempts || 0,
+    bestAt: prev.bestAt, updatedAt: now,
+    // 실시간 진행 상태
+    live: {
+      score: score || 0,
+      current: current || 0,
+      total: total || 22,
+      playing: playing !== false,
+      at: now
+    }
+  };
+  saveData(data);
+  res.json({ ok: true });
+});
+
 // ── 교수자 조회 ──
 app.get('/api/results', (req, res) => {
   if (req.query.code !== TEACHER_CODE) {
@@ -70,25 +98,43 @@ app.get('/api/results', (req, res) => {
   res.json({ ok: true, list });
 });
 
-// ── 실시간 순위 (누구나 조회, 개인정보는 최소화) ──
+// ── 실시간 순위 (누구나 조회, 익명) ──
 app.get('/api/leaderboard', (req, res) => {
   const data = loadData();
-  const cf = req.query.classNo;  // 선택: 특정 분반만
+  const cf = req.query.classNo;
   let list = Object.values(data);
   if (cf) list = list.filter(r => String(r.classNo) === String(cf));
-  // 점수 내림차순 → 최근 갱신 빠른 순
-  list.sort((a, b) => {
-    if ((b.score || 0) !== (a.score || 0)) return (b.score || 0) - (a.score || 0);
-    return new Date(a.bestAt || 0) - new Date(b.bestAt || 0);
+
+  // 표시 점수: 게임 중이면 실시간 점수(live.score), 끝났으면 최고점(score) 중 큰 값
+  const withScore = list.map(r => {
+    const liveScore = (r.live && r.live.playing) ? (r.live.score || 0) : 0;
+    const bestScore = r.score || 0;
+    const showScore = Math.max(liveScore, bestScore);
+    const playing = !!(r.live && r.live.playing);
+    // 최근 활동 시각 (정렬 tie-break: 먼저 도달한 사람이 위로)
+    const at = (r.live && r.live.at) ? r.live.at : (r.bestAt || r.updatedAt || 0);
+    return {
+      name: r.name, sid: r.sid, classNo: r.classNo || '',
+      showScore, playing,
+      current: (r.live && r.live.current) || 0,
+      total: (r.live && r.live.total) || r.total || 22,
+      at
+    };
   });
-  // 학번은 뒷자리 일부만 마스킹해서 공개 (동명이인 구분용)
-  const safe = list.map((r, i) => ({
+
+  withScore.sort((a, b) => {
+    if (b.showScore !== a.showScore) return b.showScore - a.showScore;
+    return new Date(a.at || 0) - new Date(b.at || 0);
+  });
+
+  const safe = withScore.map((r, i) => ({
     rank: i + 1,
-    name: r.name,
-    classNo: r.classNo || '',
+    classNo: r.classNo,
     sidTail: r.sid ? String(r.sid).slice(-2) : '',
-    score: r.score,
-    total: r.total
+    score: r.showScore,
+    current: r.current,
+    total: r.total,
+    playing: r.playing
   }));
   res.json({ ok: true, list: safe, count: safe.length });
 });
