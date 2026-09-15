@@ -6,134 +6,67 @@
 <title>의학용어 게임</title>
 <style>
   :root{
-    --ink:#1a2b3c;
-    --paper:#f6f3ec;
-    --card:#ffffff;
-    --line:#e2ddd0;
-    --muted:#8a8577;
-    --teal:#0f7d76;
-    --teal-soft:#e3f2f0;
-    --coral:#d65a4a;
-    --coral-soft:#fbe8e4;
-    --gold:#c98a1f;
-    --gold-soft:#f6ecd6;
-    --ok:#1a8f6b;
-    --ok-soft:#e0f3ea;
-    --no:#c9433a;
-    --no-soft:#fbe6e4;
+    --ink:#1a2b3c; --paper:#f6f3ec; --card:#ffffff; --line:#e2ddd0; --muted:#8a8577;
+    --teal:#0f7d76; --teal-soft:#e3f2f0; --gold:#c98a1f; --gold-soft:#f6ecd6;
+    --ok:#1a8f6b; --ok-soft:#e0f3ea; --no:#c9433a; --no-soft:#fbe6e4;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"Malgun Gothic","맑은 고딕",sans-serif;
-    background:var(--paper);
-    color:var(--ink);
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-    line-height:1.5;
+    background:var(--paper);color:var(--ink);min-height:100vh;
+    display:flex;align-items:center;justify-content:center;padding:20px;line-height:1.5;
   }
   .card{
-    background:var(--card);
-    width:100%;
-    max-width:520px;
-    border-radius:20px;
-    border:1px solid var(--line);
-    box-shadow:0 12px 40px rgba(26,43,60,.08);
-    overflow:hidden;
+    background:var(--card);width:100%;max-width:520px;border-radius:20px;
+    border:1px solid var(--line);box-shadow:0 12px 40px rgba(26,43,60,.08);overflow:hidden;
   }
 
-  /* ── 상단 진행바 ── */
-  .top{
-    padding:18px 24px 0;
-  }
-  .progress-wrap{
-    display:flex;align-items:center;gap:12px;
-  }
-  .progress-bar{
-    flex:1;height:8px;background:var(--line);border-radius:99px;overflow:hidden;
-  }
-  .progress-fill{
-    height:100%;background:var(--teal);width:0%;
-    transition:width .35s ease;
-  }
-  .progress-txt{
-    font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;
-  }
-  .score-pill{
-    font-size:13px;font-weight:700;color:var(--teal);
-    background:var(--teal-soft);padding:4px 12px;border-radius:99px;
-  }
+  .top{padding:18px 24px 0}
+  .progress-wrap{display:flex;align-items:center;gap:12px}
+  .progress-bar{flex:1;height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+  .progress-fill{height:100%;background:var(--teal);width:0%;transition:width .35s ease}
+  .progress-txt{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .score-pill{font-size:13px;font-weight:700;color:var(--teal);background:var(--teal-soft);padding:4px 12px;border-radius:99px}
 
   .body{padding:24px}
 
-  /* ── 시작 화면 ── */
+  /* 참가 화면 */
   .intro h1{font-size:26px;margin-bottom:8px;letter-spacing:-.5px}
-  .intro .lead{color:var(--muted);font-size:15px;margin-bottom:24px}
-  .rules{
-    background:var(--paper);border-radius:14px;padding:18px 20px;margin-bottom:24px;
+  .intro .lead{color:var(--muted);font-size:15px;margin-bottom:20px}
+  input,select{
+    width:100%;padding:14px 16px;border:2px solid var(--line);border-radius:14px;
+    font-size:16px;background:#fbfdff;color:var(--ink);margin-bottom:12px;outline:none;font-family:inherit;
   }
-  .rules .r{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;font-size:14px}
+  input:focus,select:focus{border-color:var(--teal)}
+  .rules{background:var(--paper);border-radius:14px;padding:16px 18px;margin:8px 0 20px}
+  .rules .r{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;font-size:14px}
   .rules .r:last-child{margin-bottom:0}
-  .rules .ic{
-    flex-shrink:0;width:26px;height:26px;border-radius:8px;
-    display:flex;align-items:center;justify-content:center;font-size:14px;
-  }
+  .rules .ic{flex-shrink:0;width:26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
   .ic.build{background:var(--teal-soft)}
   .ic.choice{background:var(--gold-soft)}
+  .err{color:var(--no);font-size:14px;min-height:20px;margin-bottom:6px}
 
-  /* ── 문제 헤더 ── */
-  .qtag{
-    display:inline-block;font-size:12px;font-weight:700;letter-spacing:.3px;
-    padding:5px 12px;border-radius:99px;margin-bottom:14px;
-  }
+  .qtag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.3px;padding:5px 12px;border-radius:99px;margin-bottom:14px}
   .qtag.build{background:var(--teal-soft);color:var(--teal)}
   .qtag.choice{background:var(--gold-soft);color:var(--gold)}
   .prompt{font-size:22px;font-weight:700;margin-bottom:6px;letter-spacing:-.3px;line-height:1.35}
   .hint{font-size:14px;color:var(--muted);margin-bottom:22px}
 
-  /* ── 조립 영역 ── */
-  .build-slot{
-    min-height:60px;border:2px dashed var(--line);border-radius:14px;
-    display:flex;flex-wrap:wrap;gap:8px;align-items:center;
-    padding:12px;margin-bottom:8px;
-  }
-  .build-slot.empty::before{
-    content:"여기에 조립됩니다";color:var(--muted);font-size:14px;
-  }
-  .slot-tile{
-    background:var(--teal);color:#fff;font-weight:700;font-size:16px;
-    padding:9px 15px;border-radius:10px;cursor:pointer;
-    animation:pop .18s ease;
-  }
+  .build-slot{min-height:60px;border:2px dashed var(--line);border-radius:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px;margin-bottom:8px}
+  .build-slot.empty::before{content:"여기에 조립됩니다";color:var(--muted);font-size:14px}
+  .slot-tile{background:var(--teal);color:#fff;font-weight:700;font-size:16px;padding:9px 15px;border-radius:10px;cursor:pointer;animation:pop .18s ease}
   @keyframes pop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
   .slot-hint{font-size:12px;color:var(--muted);margin-bottom:16px}
-
   .tiles{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
-  .tile{
-    background:#fff;border:2px solid var(--teal);color:var(--teal);
-    font-weight:700;font-size:16px;padding:10px 16px;border-radius:10px;
-    cursor:pointer;transition:transform .1s ease,background .15s ease;
-  }
+  .tile{background:#fff;border:2px solid var(--teal);color:var(--teal);font-weight:700;font-size:16px;padding:10px 16px;border-radius:10px;cursor:pointer;transition:transform .1s ease,background .15s ease}
   .tile:hover{background:var(--teal-soft)}
   .tile:active{transform:translateY(2px)}
   .tile.used{opacity:.3;pointer-events:none;text-decoration:line-through}
 
-  /* ── 객관식 보기 ── */
   .choices{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
-  .choice{
-    text-align:left;background:#fff;border:2px solid var(--line);
-    border-radius:12px;padding:14px 16px;font-size:16px;color:var(--ink);
-    cursor:pointer;display:flex;align-items:center;gap:12px;
-    transition:border-color .15s ease,background .15s ease;
-    font-family:inherit;
-  }
+  .choice{text-align:left;background:#fff;border:2px solid var(--line);border-radius:12px;padding:14px 16px;font-size:16px;color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:12px;transition:border-color .15s ease,background .15s ease;font-family:inherit}
   .choice:hover{border-color:var(--gold)}
-  .choice .num{
-    flex-shrink:0;width:26px;height:26px;border-radius:7px;background:var(--paper);
-    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--muted);
-  }
+  .choice .num{flex-shrink:0;width:26px;height:26px;border-radius:7px;background:var(--paper);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--muted)}
   .choice.correct{border-color:var(--ok);background:var(--ok-soft)}
   .choice.correct .num{background:var(--ok);color:#fff}
   .choice.wrong{border-color:var(--no);background:var(--no-soft)}
@@ -141,44 +74,31 @@
   .choice.locked{pointer-events:none}
   .choice.dim{opacity:.5}
 
-  /* ── 버튼 ── */
-  .btn{
-    width:100%;border:none;border-radius:12px;padding:15px;
-    font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;
-    transition:transform .1s ease,opacity .15s ease;
-  }
+  .btn{width:100%;border:none;border-radius:12px;padding:15px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:transform .1s ease,opacity .15s ease}
   .btn:active{transform:translateY(2px)}
   .btn-primary{background:var(--teal);color:#fff}
   .btn-gold{background:var(--gold);color:#fff}
-  .btn-ghost{background:#fff;color:var(--muted);border:2px solid var(--line)}
   .btn:disabled{opacity:.4;pointer-events:none}
-  .btn-row{display:flex;gap:10px}
-  .btn-row .btn{flex:1}
 
-  /* ── 피드백 ── */
-  .fb{
-    border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:15px;
-    animation:pop .2s ease;
-  }
+  .fb{border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:15px;animation:pop .2s ease}
   .fb.ok{background:var(--ok-soft);color:var(--ok)}
   .fb.no{background:var(--no-soft);color:var(--no)}
   .fb b{color:var(--ink)}
   .fb-title{font-weight:700;margin-bottom:2px}
 
-  /* ── 완료 화면 ── */
   .done{text-align:center;padding:10px 0}
   .done .emoji{font-size:60px;display:block;margin-bottom:10px}
   .done .big{font-size:40px;font-weight:800;color:var(--teal);margin-bottom:4px;font-variant-numeric:tabular-nums}
-  .done .sub{color:var(--muted);font-size:15px;margin-bottom:24px}
-  .done .rank{font-size:18px;font-weight:700;margin-bottom:24px}
-
+  .done .sub{color:var(--muted);font-size:15px;margin-bottom:8px}
+  .done .who{font-size:14px;color:var(--muted);margin-bottom:16px}
+  .done .rank{font-size:18px;font-weight:700;margin-bottom:10px}
+  .submitMsg{font-size:14px;color:var(--ok);min-height:22px;margin-bottom:16px}
   .hidden{display:none}
 </style>
 </head>
 <body>
 <div class="card">
 
-  <!-- 진행바 (게임 중에만) -->
   <div class="top hidden" id="top">
     <div class="progress-wrap">
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -189,92 +109,45 @@
 
   <div class="body">
 
-    <!-- 시작 화면 -->
+    <!-- 참가 화면 -->
     <div id="intro" class="intro">
       <h1>🩺 의학용어 게임</h1>
-      <p class="lead">어근을 조립하고 퀴즈를 풀며 의학용어를 익혀보세요.</p>
+      <p class="lead">이름·학번·분반을 입력하고 시작하세요.</p>
+      <input id="name" placeholder="이름" maxlength="20" />
+      <input id="sid" placeholder="학번" maxlength="20" />
+      <select id="classNo">
+        <option value="">분반 선택</option>
+        <option value="101">101</option>
+        <option value="102">102</option>
+        <option value="103">103</option>
+      </select>
       <div class="rules">
-        <div class="r">
-          <div class="ic build">🧩</div>
-          <div><b>조립 문제</b> — 한글 뜻을 보고 어근·연결모음·접미사 타일을 순서대로 눌러 영어 용어를 만드세요.</div>
-        </div>
-        <div class="r">
-          <div class="ic choice">✅</div>
-          <div><b>객관식 문제</b> — 네 개의 보기 중 정답을 하나 고르세요.</div>
-        </div>
+        <div class="r"><div class="ic build">🧩</div><div><b>조립 문제</b> — 한글 뜻을 보고 어근·연결모음·접미사 타일을 순서대로 눌러 영어 용어를 만드세요.</div></div>
+        <div class="r"><div class="ic choice">✅</div><div><b>객관식 문제</b> — 네 개의 보기 중 정답을 하나 고르세요.</div></div>
       </div>
+      <div class="err" id="err"></div>
       <button class="btn btn-primary" id="startBtn">시작하기</button>
     </div>
 
-    <!-- 문제 화면 -->
     <div id="quiz" class="hidden"></div>
-
-    <!-- 완료 화면 -->
     <div id="result" class="hidden"></div>
 
   </div>
 </div>
 
 <script>
-/* ─────────────────────────────
-   문제 데이터
-   ───────────────────────────── */
 const BUILD = [
-  { 
-    meaning: "백혈구",    
-    answer: ["leuk", "o", "cyte"], 
-    distractors: ["oste", "gastr", "itis", "ectomy"] 
-  },
-  { 
-    meaning: "적혈구",    
-    answer: ["erythr", "o", "cyte"], 
-    distractors: ["oste", "gastr", "itis", "ectomy"] 
-  },
-  { 
-    meaning: "신장염",    
-    answer: ["nephr", "itis"], 
-    distractors: ["oste", "gastr", "otomy", "pathy"] 
-  },
-  { 
-    meaning: "신경병증", 
-    answer: ["neur", "o", "pathy"], 
-    distractors: ["oste", "gastr", "itis", "ectomy"] 
-  },
-  { 
-    meaning: "피부질환", 
-    answer: ["dermat", "o", "pathy"], 
-    distractors: ["oste", "gastr", "itis", "ectomy"] 
-  },
-  { 
-    meaning: "간비대",    
-    answer: ["hepat", "o", "megaly"], 
-    distractors: ["oste", "gastr", "itis", "ectomy"] 
-  },
-  { 
-    meaning: "심장비대", 
-    answer: ["cardi", "megaly"], 
-    distractors: ["oste", "gastr", "itis", "pathy"] 
-  },
-  { 
-    meaning: "관절염",    
-    answer: ["arthr", "itis"], 
-    distractors: ["oste", "gastr", "megaly", "pathy"] 
-  },
-  { 
-    meaning: "위절제술", 
-    answer: ["gastr", "ectomy"], 
-    distractors: ["oste", "arthr", "itis", "pathy"] 
-  },
-  { 
-    meaning: "신장질환", 
-    answer: ["nephr", "pathy"], 
-    distractors: ["oste", "gastr", "itis", "ectomy"] 
-  },
-  { 
-    meaning: "신경통",    
-    answer: ["neur", "algia"], 
-    distractors: ["oste", "gastr", "itis", "ectomy"] 
-  }
+  { meaning:"백혈구",   answer:["leuk","o","cyte"],    distractors:["oste","gastr","itis","ectomy"] },
+  { meaning:"적혈구",   answer:["erythr","o","cyte"],  distractors:["oste","gastr","itis","ectomy"] },
+  { meaning:"신장염",   answer:["nephr","itis"],       distractors:["oste","gastr","otomy","pathy"] },
+  { meaning:"신경병증", answer:["neur","o","pathy"],   distractors:["oste","gastr","itis","ectomy"] },
+  { meaning:"피부질환", answer:["dermat","o","pathy"], distractors:["oste","gastr","itis","ectomy"] },
+  { meaning:"간비대",   answer:["hepat","o","megaly"], distractors:["oste","gastr","itis","ectomy"] },
+  { meaning:"심장비대", answer:["cardi","megaly"],     distractors:["oste","gastr","itis","pathy"] },
+  { meaning:"관절염",   answer:["arthr","itis"],       distractors:["oste","gastr","megaly","pathy"] },
+  { meaning:"위절제술", answer:["gastr","ectomy"],     distractors:["oste","arthr","itis","pathy"] },
+  { meaning:"신장질환", answer:["nephr","pathy"],      distractors:["oste","gastr","itis","ectomy"] },
+  { meaning:"신경통",   answer:["neur","algia"],       distractors:["oste","gastr","itis","ectomy"] },
 ];
 
 const CHOICE = [
@@ -307,17 +180,13 @@ const CHOICE = [
     choices:["TID","QID","HS","IM"], answer:0 },
 ];
 
-/* build/choice 문제를 하나의 리스트로 합치고 섞기 */
 function shuffle(arr){
   const a=[...arr];
-  for(let i=a.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
-  }
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
   return a;
 }
 
-let quizList=[], current=0, score=0, answered=false;
+let student=null, quizList=[], current=0, score=0, answered=false;
 
 function buildQuizList(){
   const b=BUILD.map(q=>({type:"build",...q}));
@@ -325,120 +194,85 @@ function buildQuizList(){
   quizList=shuffle([...b,...c]);
 }
 
-/* ─────────────────────────────
-   화면 전환
-   ───────────────────────────── */
-const $intro=document.getElementById("intro");
-const $quiz=document.getElementById("quiz");
-const $result=document.getElementById("result");
-const $top=document.getElementById("top");
+const $=id=>document.getElementById(id);
+const $intro=$("intro"), $quiz=$("quiz"), $result=$("result"), $top=$("top");
 
-document.getElementById("startBtn").onclick=startGame;
-
-function startGame(){
-  buildQuizList();
-  current=0; score=0;
-  $intro.classList.add("hidden");
-  $result.classList.add("hidden");
-  $quiz.classList.remove("hidden");
-  $top.classList.remove("hidden");
+$("startBtn").onclick=()=>{
+  const name=$("name").value.trim(), sid=$("sid").value.trim(), classNo=$("classNo").value;
+  if(!name||!sid||!classNo){ $("err").textContent="이름, 학번, 분반을 모두 입력하세요."; return; }
+  student={name,sid,classNo};
+  buildQuizList(); current=0; score=0;
+  $intro.classList.add("hidden"); $result.classList.add("hidden");
+  $quiz.classList.remove("hidden"); $top.classList.remove("hidden");
   renderQuestion();
-}
+};
 
 function updateTop(){
   const total=quizList.length;
-  document.getElementById("progressFill").style.width=(current/total*100)+"%";
-  document.getElementById("progressTxt").textContent=(current+1)+" / "+total;
-  document.getElementById("scorePill").textContent=score+"점";
+  $("progressFill").style.width=(current/total*100)+"%";
+  $("progressTxt").textContent=(current+1)+" / "+total;
+  $("scorePill").textContent=score+"점";
 }
 
 function renderQuestion(){
-  answered=false;
-  updateTop();
+  answered=false; updateTop();
   const q=quizList[current];
-  if(q.type==="build") renderBuild(q);
-  else renderChoice(q);
+  if(q.type==="build") renderBuild(q); else renderChoice(q);
 }
 
-/* ─────────────────────────────
-   조립 문제
-   ───────────────────────────── */
 function renderBuild(q){
-  const scrambled=shuffle(q.answer);
-  const placed=[]; // 조립된 인덱스 (scrambled 기준)
+  const distractorList=q.distractors||["oste","gastr","itis","ectomy"];
+  const scrambled=shuffle([...q.answer,...distractorList]);
+  const placed=[];
 
   $quiz.innerHTML=`
     <span class="qtag build">🧩 조립 문제</span>
     <div class="prompt">${q.meaning}</div>
-    <div class="hint">타일을 순서대로 눌러 영어 용어를 조립하세요.</div>
+    <div class="hint">올바른 타일을 순서대로 눌러 영어 용어를 조립하세요. (함정 타일 주의!)</div>
     <div class="build-slot empty" id="slot"></div>
     <div class="slot-hint">조립된 타일을 누르면 다시 뺄 수 있어요.</div>
     <div class="tiles" id="tiles"></div>
     <div id="fbArea"></div>
     <button class="btn btn-primary" id="checkBtn" disabled>정답 확인</button>
   `;
-
-  const $slot=document.getElementById("slot");
-  const $tiles=document.getElementById("tiles");
-  const $check=document.getElementById("checkBtn");
+  const $slot=$("slot"), $tiles=$("tiles"), $check=$("checkBtn");
 
   scrambled.forEach((part,idx)=>{
     const t=document.createElement("button");
-    t.className="tile";
-    t.textContent=part;
-    t.onclick=()=>{
-      if(answered) return;
-      t.classList.add("used");
-      placed.push(idx);
-      redrawSlot();
-    };
+    t.className="tile"; t.textContent=part;
+    t.onclick=()=>{ if(answered) return; t.classList.add("used"); placed.push(idx); redrawSlot(); };
     $tiles.appendChild(t);
   });
 
   function redrawSlot(){
     $slot.innerHTML="";
-    if(placed.length===0){ $slot.classList.add("empty"); }
-    else{ $slot.classList.remove("empty"); }
+    $slot.classList.toggle("empty", placed.length===0);
     placed.forEach((sIdx,pos)=>{
       const st=document.createElement("span");
-      st.className="slot-tile";
-      st.textContent=scrambled[sIdx];
-      st.onclick=()=>{
-        if(answered) return;
-        placed.splice(pos,1);
-        $tiles.children[sIdx].classList.remove("used");
-        redrawSlot();
-      };
+      st.className="slot-tile"; st.textContent=scrambled[sIdx];
+      st.onclick=()=>{ if(answered) return; placed.splice(pos,1); $tiles.children[sIdx].classList.remove("used"); redrawSlot(); };
       $slot.appendChild(st);
     });
-    $check.disabled = placed.length!==q.answer.length;
+    $check.disabled = placed.length===0;
   }
 
   $check.onclick=()=>{
-    if(answered) return;
-    answered=true;
+    if(answered) return; answered=true;
     const made=placed.map(i=>scrambled[i]);
-    const correct=made.join("")===q.answer.join("");
+    const correct=(made.length===q.answer.length)&&made.every((v,i)=>v===q.answer[i]);
     if(correct) score++;
-    // 타일/슬롯 잠금
     [...$tiles.children].forEach(c=>c.style.pointerEvents="none");
     [...$slot.children].forEach(c=>c.style.pointerEvents="none");
-    const correctWord=q.answer.join("");
-    const madeWord=made.join("");
-    document.getElementById("fbArea").innerHTML = correct
+    const correctWord=q.answer.join(""), madeWord=made.join("");
+    $("fbArea").innerHTML = correct
       ? `<div class="fb ok"><div class="fb-title">정답입니다! 🎉</div><b>${correctWord}</b> = ${q.answer.join(" + ")}</div>`
       : `<div class="fb no"><div class="fb-title">아쉬워요</div>내 답: ${madeWord||"—"} · 정답: <b>${correctWord}</b> (${q.answer.join(" + ")})</div>`;
     swapToNext($check);
   };
 }
 
-/* ─────────────────────────────
-   객관식 문제
-   ───────────────────────────── */
 function renderChoice(q){
-  // 보기를 섞되 정답 위치를 추적
   const order=shuffle(q.choices.map((text,i)=>({text,correct:i===q.answer})));
-
   $quiz.innerHTML=`
     <span class="qtag choice">✅ 객관식 문제</span>
     <div class="prompt">${q.prompt}</div>
@@ -447,20 +281,14 @@ function renderChoice(q){
     <div id="fbArea"></div>
     <button class="btn btn-gold hidden" id="nextBtn">다음 문제</button>
   `;
-
-  const $choices=document.getElementById("choices");
-  const numLabels=["①","②","③","④","⑤"];
-
+  const $choices=$("choices"), numLabels=["①","②","③","④","⑤"];
   order.forEach((opt,idx)=>{
     const b=document.createElement("button");
     b.className="choice";
     b.innerHTML=`<span class="num">${numLabels[idx]}</span><span>${opt.text}</span>`;
     b.onclick=()=>{
-      if(answered) return;
-      answered=true;
-      const correct=opt.correct;
-      if(correct) score++;
-      // 모든 보기 잠금 + 표시
+      if(answered) return; answered=true;
+      if(opt.correct) score++;
       [...$choices.children].forEach((c,i)=>{
         c.classList.add("locked");
         if(order[i].correct) c.classList.add("correct");
@@ -468,10 +296,10 @@ function renderChoice(q){
         else c.classList.add("dim");
       });
       const correctText=order.find(o=>o.correct).text;
-      document.getElementById("fbArea").innerHTML = correct
+      $("fbArea").innerHTML = opt.correct
         ? `<div class="fb ok"><div class="fb-title">정답입니다! 🎉</div>잘하셨어요.</div>`
         : `<div class="fb no"><div class="fb-title">아쉬워요</div>정답: <b>${correctText}</b></div>`;
-      const $next=document.getElementById("nextBtn");
+      const $next=$("nextBtn");
       $next.classList.remove("hidden");
       $next.textContent = isLast() ? "결과 보기" : "다음 문제";
       $next.onclick=goNext;
@@ -481,31 +309,17 @@ function renderChoice(q){
   });
 }
 
-/* ─────────────────────────────
-   다음 문제 / 결과
-   ───────────────────────────── */
 function isLast(){ return current>=quizList.length-1; }
-
 function swapToNext(btn){
   updateTop();
   btn.textContent = isLast() ? "결과 보기" : "다음 문제";
-  btn.className = "btn btn-gold";
-  btn.disabled=false;
-  btn.onclick=goNext;
+  btn.className="btn btn-gold"; btn.disabled=false; btn.onclick=goNext;
 }
-
-function goNext(){
-  current++;
-  if(current>=quizList.length) showResult();
-  else renderQuestion();
-}
+function goNext(){ current++; if(current>=quizList.length) showResult(); else renderQuestion(); }
 
 function showResult(){
-  $quiz.classList.add("hidden");
-  $top.classList.add("hidden");
-  $result.classList.remove("hidden");
-  const total=quizList.length;
-  const pct=Math.round(score/total*100);
+  $quiz.classList.add("hidden"); $top.classList.add("hidden"); $result.classList.remove("hidden");
+  const total=quizList.length, pct=Math.round(score/total*100);
   let emoji,rank;
   if(pct===100){emoji="🏆";rank="완벽해요! 의학용어 마스터";}
   else if(pct>=80){emoji="🎉";rank="훌륭해요!";}
@@ -518,11 +332,32 @@ function showResult(){
       <span class="emoji">${emoji}</span>
       <div class="big">${score} / ${total}</div>
       <div class="sub">정답률 ${pct}%</div>
+      <div class="who">${student.name} · ${student.sid} · ${student.classNo}분반</div>
       <div class="rank">${rank}</div>
+      <div class="submitMsg" id="submitMsg">제출 중…</div>
       <button class="btn btn-primary" id="againBtn">다시 도전하기</button>
     </div>
   `;
-  document.getElementById("againBtn").onclick=startGame;
+  $("againBtn").onclick=()=>{
+    buildQuizList(); current=0; score=0;
+    $result.classList.add("hidden"); $quiz.classList.remove("hidden"); $top.classList.remove("hidden");
+    renderQuestion();
+  };
+  submit();
+}
+
+function submit(){
+  fetch('/api/submit',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      name:student.name, sid:student.sid, classNo:student.classNo,
+      score, correct:score, total:quizList.length
+    })
+  })
+  .then(r=>r.json())
+  .then(d=>{ $("submitMsg").textContent = d.ok ? "✅ 제출 완료 (선생님이 확인할 수 있어요)" : "제출 실패 - 다시 시도해주세요"; })
+  .catch(()=>{ $("submitMsg").textContent="제출 저장 실패 - 네트워크를 확인해주세요"; });
 }
 </script>
 </body>
