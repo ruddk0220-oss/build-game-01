@@ -6,44 +6,44 @@
 <title>의학용어 게임 결과 (교수자용)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Jua&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Jua&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#5a5568; --mint:#7ed9c3; --mint-soft:#dff7f0; --mint-deep:#3fbfa3;
-    --pink:#ffb3c9; --pink-soft:#ffe3ec; --pink-deep:#ff7fa3;
-    --yellow-soft:#fff6d9; --cream:#fffaf3; --line:#f0e6dd; --muted:#a89f97;
-    --no:#ff8f9c;
+    --ink:#2d2a3e; --mint:#20c9a6; --mint-soft:#c5f3e9; --mint-deep:#009e82;
+    --pink:#ff6fa5; --pink-soft:#ffd0e0; --pink-deep:#e6337a;
+    --yellow:#ffc93c; --yellow-soft:#fff0c2; --cream:#ffffff; --line:#ece4dd; --muted:#7a7488;
+    --no:#ff5a72;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Gaegu','Malgun Gothic',sans-serif;background:linear-gradient(135deg,#fff6d9 0%,#ffe3ec 50%,#dff7f0 100%);background-attachment:fixed;color:var(--ink);min-height:100vh;padding:24px;line-height:1.55;font-size:17px}
+  body{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:linear-gradient(135deg,#ffe4a3 0%,#ffb3d1 50%,#8ee8d5 100%);background-attachment:fixed;color:var(--ink);min-height:100vh;padding:24px;line-height:1.55;font-size:16px;font-weight:500}
   .wrap{max-width:920px;margin:0 auto}
   h1{font-family:'Jua',sans-serif;font-size:30px;margin-bottom:4px;color:var(--pink-deep)}
-  .sub{color:var(--muted);font-size:16px;margin-bottom:20px;font-weight:700}
+  .sub{color:var(--ink);font-size:16px;margin-bottom:20px;font-weight:700}
   h1,.btn,.stat .v{font-family:'Jua',sans-serif}
 
-  .login{background:var(--cream);border:3px solid #fff;border-radius:26px;padding:26px;max-width:400px;box-shadow:0 12px 34px rgba(255,127,163,.15)}
-  input,select{padding:13px 16px;border:3px solid var(--pink-soft);border-radius:16px;font-size:16px;background:#fff;color:var(--ink);outline:none;font-family:'Gaegu',sans-serif;font-weight:700}
-  input:focus,select:focus{border-color:var(--pink)}
+  .login{background:var(--cream);border:3px solid var(--pink);border-radius:26px;padding:26px;max-width:400px;box-shadow:0 12px 34px rgba(230,51,122,.18)}
+  input,select{padding:13px 16px;border:3px solid var(--pink);border-radius:16px;font-size:16px;background:#fff;color:var(--ink);outline:none;font-family:'Noto Sans KR',sans-serif;font-weight:700}
+  input:focus,select:focus{border-color:var(--pink-deep)}
   .login input{width:100%;margin-bottom:12px}
-  .btn{border:none;border-radius:16px;padding:13px 20px;font-size:17px;cursor:pointer;background:linear-gradient(135deg,var(--pink),var(--pink-deep));color:#fff;box-shadow:0 4px 0 rgba(255,127,163,.3)}
-  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(255,127,163,.3)}
-  .btn.ghost{background:#fff;color:var(--muted);border:3px solid var(--pink-soft);box-shadow:0 4px 0 rgba(240,230,221,.6)}
-  .btn.danger{background:linear-gradient(135deg,#ffa3ad,var(--no));box-shadow:0 4px 0 rgba(255,143,156,.35)}
+  .btn{border:none;border-radius:16px;padding:13px 20px;font-size:17px;cursor:pointer;background:var(--pink-deep);color:#fff;box-shadow:0 4px 0 #a81f5a}
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #a81f5a}
+  .btn.ghost{background:#fff;color:var(--pink-deep);border:3px solid var(--pink);box-shadow:0 4px 0 var(--pink-soft)}
+  .btn.danger{background:var(--no);box-shadow:0 4px 0 #c62236}
   .err{color:var(--no);font-size:15px;font-weight:700;min-height:20px;margin-top:8px}
 
   .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
   .toolbar .spacer{flex:1}
   .stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
-  .stat{background:var(--cream);border:3px solid #fff;border-radius:20px;padding:14px 20px;min-width:130px;box-shadow:0 6px 18px rgba(126,217,195,.14)}
-  .stat .k{font-size:14px;color:var(--muted);font-weight:700}
+  .stat{background:var(--cream);border:3px solid var(--mint);border-radius:20px;padding:14px 20px;min-width:130px;box-shadow:0 6px 18px rgba(32,201,166,.18)}
+  .stat .k{font-size:14px;color:var(--ink);font-weight:700}
   .stat .v{font-size:28px;color:var(--mint-deep)}
 
-  table{width:100%;border-collapse:separate;border-spacing:0;background:var(--cream);border:3px solid #fff;border-radius:20px;overflow:hidden;box-shadow:0 8px 22px rgba(255,127,163,.1)}
-  th,td{padding:13px 16px;text-align:left;font-size:16px;border-bottom:2px solid var(--pink-soft);font-weight:700}
-  th{background:var(--mint-soft);color:var(--mint-deep)}
+  table{width:100%;border-collapse:separate;border-spacing:0;background:var(--cream);border:3px solid var(--mint);border-radius:20px;overflow:hidden;box-shadow:0 8px 22px rgba(230,51,122,.12)}
+  th,td{padding:13px 16px;text-align:left;font-size:16px;border-bottom:2px solid var(--mint-soft);font-weight:700}
+  th{background:var(--mint-deep);color:#fff;font-weight:900}
   tr:last-child td{border-bottom:none}
   td.num{font-variant-numeric:tabular-nums}
-  .rank1{color:var(--pink-deep);font-size:19px}
+  .rank1{color:var(--pink-deep);font-size:19px;font-weight:900}
   .empty{text-align:center;color:var(--muted);padding:34px;font-weight:700}
   .msg{color:var(--mint-deep);font-size:15px;font-weight:700;min-height:20px;margin-top:10px}
   .hidden{display:none}
