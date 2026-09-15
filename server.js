@@ -70,7 +70,28 @@ app.get('/api/results', (req, res) => {
   res.json({ ok: true, list });
 });
 
-// ── 교수자 기록 삭제 ──
+// ── 실시간 순위 (누구나 조회, 개인정보는 최소화) ──
+app.get('/api/leaderboard', (req, res) => {
+  const data = loadData();
+  const cf = req.query.classNo;  // 선택: 특정 분반만
+  let list = Object.values(data);
+  if (cf) list = list.filter(r => String(r.classNo) === String(cf));
+  // 점수 내림차순 → 최근 갱신 빠른 순
+  list.sort((a, b) => {
+    if ((b.score || 0) !== (a.score || 0)) return (b.score || 0) - (a.score || 0);
+    return new Date(a.bestAt || 0) - new Date(b.bestAt || 0);
+  });
+  // 학번은 뒷자리 일부만 마스킹해서 공개 (동명이인 구분용)
+  const safe = list.map((r, i) => ({
+    rank: i + 1,
+    name: r.name,
+    classNo: r.classNo || '',
+    sidTail: r.sid ? String(r.sid).slice(-2) : '',
+    score: r.score,
+    total: r.total
+  }));
+  res.json({ ok: true, list: safe, count: safe.length });
+});
 app.post('/api/reset', (req, res) => {
   if ((req.body || {}).code !== TEACHER_CODE) {
     return res.status(403).json({ ok: false, error: 'forbidden' });
