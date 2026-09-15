@@ -59,6 +59,32 @@
   .msg{color:var(--mint-deep);font-size:15px;font-weight:700;min-height:20px;margin-top:10px}
   @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
   .hidden{display:none}
+
+  /* 게임 제어 */
+  .control{background:var(--cream);border:3px solid var(--pink);border-radius:20px;padding:18px 22px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .ctrl-status{font-family:'Jua',sans-serif;font-size:20px;color:var(--ink)}
+  .ctrl-status .on{color:var(--mint-deep)}
+  .ctrl-status .off{color:var(--pink-deep)}
+  .ctrl-btns{display:flex;gap:10px;flex-wrap:wrap}
+  .ctrl-start{background:var(--mint-deep);box-shadow:0 4px 0 #007a66;font-size:18px;padding:14px 26px}
+  .ctrl-start:active{box-shadow:0 1px 0 #007a66}
+
+  /* 강의용 대형 순위판 */
+  .bigrank{background:linear-gradient(135deg,#fff6d9,#ffe3ec);border:3px solid var(--yellow);border-radius:24px;padding:22px 24px;margin-bottom:20px}
+  .bigrank-head{font-family:'Jua',sans-serif;font-size:28px;color:#7a4e00;text-align:center;margin-bottom:16px}
+  .bigrank-live{font-size:15px;color:var(--mint-deep);vertical-align:middle}
+  .bigrank-live .dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--mint-deep);margin-right:5px;animation:blink 1.2s ease infinite}
+  .bigrank-rows{display:flex;flex-direction:column;gap:10px}
+  .bigrank-row{display:flex;align-items:center;gap:16px;background:#fff;border-radius:16px;padding:14px 20px;font-size:22px;font-weight:900;box-shadow:0 3px 10px rgba(0,0,0,.06);transition:transform .3s ease}
+  .bigrank-row .b-rank{flex-shrink:0;width:50px;text-align:center;font-family:'Jua',sans-serif;font-size:26px;color:var(--muted)}
+  .bigrank-row .b-name{flex:1;color:var(--ink)}
+  .bigrank-row .b-play{flex-shrink:0;font-size:14px;font-weight:700;color:var(--mint-deep)}
+  .bigrank-row .b-score{flex-shrink:0;font-family:'Jua',sans-serif;font-size:28px;color:var(--pink-deep)}
+  .bigrank-row.b1{background:linear-gradient(135deg,#fff0b3,#ffd94a);transform:scale(1.03)}
+  .bigrank-row.b1 .b-rank{color:#d99b00}
+  .bigrank-row.b2{background:linear-gradient(135deg,#eef1f5,#dfe4ea)}
+  .bigrank-row.b3{background:linear-gradient(135deg,#f7ece2,#eddac9)}
+  .bigrank-empty{text-align:center;color:var(--muted);font-weight:700;padding:24px;font-size:18px}
 </style>
 </head>
 <body>
@@ -84,8 +110,23 @@
   </div>
 
   <div id="dash" class="hidden">
+    <!-- 게임 제어 -->
+    <div class="control" id="control">
+      <div class="ctrl-status" id="ctrlStatus">상태 확인 중…</div>
+      <div class="ctrl-btns">
+        <button class="btn ctrl-start" id="startGameBtn">▶️ 게임 시작</button>
+        <button class="btn ghost" id="lobbyBtn">🔄 대기실로 (새 게임)</button>
+      </div>
+    </div>
+
+    <!-- 강의용 대형 실시간 순위 -->
+    <div class="bigrank" id="bigrank">
+      <div class="bigrank-head">🏆 실시간 순위 <span class="bigrank-live"><span class="dot"></span>LIVE</span></div>
+      <div class="bigrank-rows" id="bigrankRows"><div class="bigrank-empty">참가자를 기다리는 중…</div></div>
+    </div>
+
     <div style="text-align:right;font-size:14px;color:var(--mint-deep);font-weight:700;margin-bottom:8px">
-      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--mint-deep);margin-right:5px;animation:blink 1.2s ease infinite"></span>5초마다 자동 갱신 중
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--mint-deep);margin-right:5px;animation:blink 1.2s ease infinite"></span>실시간 자동 갱신 중
     </div>
     <div class="stats" id="stats"></div>
     <div class="toolbar">
@@ -147,8 +188,60 @@ function login(){
       $("dash").classList.remove("hidden");
       render();
       startAutoRefresh();
+      startBigRank();
+      refreshState();
     })
     .catch(()=>{ $("loginErr").textContent="비밀번호가 올바르지 않습니다."; });
+}
+
+// ── 게임 시작 / 대기실 버튼 ──
+$("startGameBtn").onclick=()=>{
+  fetch('/api/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:CODE})})
+    .then(r=>r.json()).then(d=>{ if(d.ok){ refreshState(); $("msg").textContent="게임을 시작했어요! 학생들이 동시에 출발합니다 🚀"; } });
+};
+$("lobbyBtn").onclick=()=>{
+  if(!confirm("대기실로 되돌릴까요? 지금까지의 점수 기록이 초기화되고 새 게임을 준비합니다.")) return;
+  fetch('/api/lobby',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:CODE})})
+    .then(r=>r.json()).then(d=>{ if(d.ok){ DATA=[]; render(); refreshState(); $("msg").textContent="대기실로 되돌렸어요. 학생들이 다시 모이면 시작하세요."; } });
+};
+function refreshState(){
+  fetch('/api/state').then(r=>r.json()).then(d=>{
+    const st=d.state||{};
+    const el=$("ctrlStatus");
+    if(st.status==='playing'){
+      el.innerHTML=`상태: <span class="on">▶️ 게임 진행 중</span> (라운드 ${st.round})`;
+      $("startGameBtn").textContent="▶️ 진행 중…";
+    }else{
+      el.innerHTML=`상태: <span class="off">⏳ 대기실 (학생 모으는 중)</span>`;
+      $("startGameBtn").textContent="▶️ 게임 시작";
+    }
+  }).catch(()=>{});
+}
+
+// ── 강의용 대형 순위판 (익명, 2초 갱신) ──
+let bigTimer=null;
+function startBigRank(){
+  if(bigTimer) clearInterval(bigTimer);
+  fetchBigRank();
+  bigTimer=setInterval(()=>{ fetchBigRank(); refreshState(); }, 2000);
+}
+function fetchBigRank(){
+  fetch('/api/leaderboard').then(r=>r.json()).then(d=>drawBigRank(d.list||[])).catch(()=>{});
+}
+function drawBigRank(list){
+  const el=$("bigrankRows"); if(!el) return;
+  if(list.length===0){ el.innerHTML=`<div class="bigrank-empty">참가자를 기다리는 중… 🌱</div>`; return; }
+  const medals=["🥇","🥈","🥉"];
+  const top=list.slice(0,8);
+  let html="";
+  top.forEach(r=>{
+    const label=r.rank<=3?medals[r.rank-1]:r.rank;
+    const anon=(r.classNo?r.classNo+"-":"")+(r.sidTail||"??");
+    const cls="bigrank-row"+(r.rank<=3?" b"+r.rank:"");
+    const play=r.playing?`<span class="b-play">▶ ${r.current}/${r.total}</span>`:'';
+    html+=`<div class="${cls}"><span class="b-rank">${label}</span><span class="b-name">${anon}</span>${play}<span class="b-score">${r.score}</span></div>`;
+  });
+  el.innerHTML=html;
 }
 
 let autoTimer=null;

@@ -171,6 +171,20 @@
   .lr-row.me{background:var(--pink-soft);border:2px solid var(--pink)}
   .lr-row.me .lr-name{color:var(--pink-deep);font-weight:900}
   .lr-empty{text-align:center;color:var(--muted);font-size:13px;font-weight:700;padding:8px}
+
+  /* 대기실 */
+  #lobby{text-align:center}
+  .lobby-box{padding:20px 10px}
+  .lobby-emoji{font-size:70px;margin-bottom:12px;animation:bounce 1.2s ease infinite}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  .lobby-title{font-family:'Jua',sans-serif;font-size:30px;color:var(--pink-deep);margin-bottom:10px}
+  .lobby-desc{font-size:17px;color:var(--ink);font-weight:700;line-height:1.5;margin-bottom:18px}
+  .lobby-me{display:inline-block;font-size:16px;color:#7a4e00;font-weight:700;background:var(--yellow);padding:8px 18px;border-radius:99px;margin-bottom:20px}
+  .lobby-dots{display:flex;gap:8px;justify-content:center}
+  .lobby-dots span{width:12px;height:12px;border-radius:50%;background:var(--mint-deep);animation:blink 1.2s ease infinite}
+  .lobby-dots span:nth-child(2){animation-delay:.2s}
+  .lobby-dots span:nth-child(3){animation-delay:.4s}
+  .done-wait{margin-top:8px;font-size:15px;color:var(--mint-deep);font-weight:700;line-height:1.5}
   .hidden{display:none}
 </style>
 </head>
@@ -221,6 +235,17 @@
       <div class="lr-rows" id="lrRows"><div class="lr-empty">순위 불러오는 중…</div></div>
     </div>
     <div id="result" class="hidden"></div>
+
+    <!-- 대기실 -->
+    <div id="lobby" class="hidden">
+      <div class="lobby-box">
+        <div class="lobby-emoji">⏳</div>
+        <div class="lobby-title">곧 시작해요!</div>
+        <div class="lobby-desc">선생님이 게임을 시작할 때까지<br>잠깐만 기다려 주세요.</div>
+        <div class="lobby-me" id="lobbyMe"></div>
+        <div class="lobby-dots"><span></span><span></span><span></span></div>
+      </div>
+    </div>
 
   </div>
 </div>
@@ -310,20 +335,50 @@ function loadProgress(){
 }
 
 const $=id=>document.getElementById(id);
-const $intro=$("intro"), $quiz=$("quiz"), $result=$("result"), $top=$("top");
+const $intro=$("intro"), $quiz=$("quiz"), $result=$("result"), $top=$("top"), $lobby=$("lobby");
 
 $("startBtn").onclick=()=>{
   const name=$("name").value.trim(), sid=$("sid").value.trim(), classNo=$("classNo").value;
   if(!name||!sid||!classNo){ $("err").textContent="이름, 학번, 분반을 모두 적어주세요! 🥺"; return; }
   student={name,sid,classNo};
-  buildQuizList(); current=0; score=0; answered=false;
-  saveProgress();
-  $intro.classList.add("hidden"); $result.classList.add("hidden");
-  $quiz.classList.remove("hidden"); $top.classList.remove("hidden");
-  renderQuestion();
+  enterLobby();
 };
 
-// 저장된 진행상황이 있으면 이어하기
+// 대기실 입장: 교수가 시작할 때까지 대기
+let lobbyTimer=null, myRound=0;
+function enterLobby(){
+  $intro.classList.add("hidden"); $result.classList.add("hidden");
+  $quiz.classList.add("hidden"); $top.classList.add("hidden");
+  $lobby.classList.remove("hidden");
+  $("lobbyMe").textContent=`${student.name} · ${student.classNo}분반`;
+  // 대기 명단에 등록
+  fetch('/api/waiting',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(student)}).catch(()=>{});
+  // 상태 폴링: playing이 되면 게임 시작
+  pollState();
+  if(lobbyTimer) clearInterval(lobbyTimer);
+  lobbyTimer=setInterval(pollState, 1500);
+}
+function pollState(){
+  fetch('/api/state').then(r=>r.json()).then(d=>{
+    const st=d.state||{};
+    if(st.status==='playing'){
+      // 교수가 시작함 → 게임 시작 (모두 1번부터 동시에)
+      clearInterval(lobbyTimer); lobbyTimer=null;
+      myRound=st.round;
+      $lobby.classList.add("hidden");
+      startGameNow();
+    }
+  }).catch(()=>{});
+}
+function startGameNow(){
+  buildQuizList(); current=0; score=0; answered=false;
+  saveProgress();
+  $quiz.classList.remove("hidden"); $top.classList.remove("hidden");
+  renderQuestion();
+}
+
+// 저장된 진행상황이 있으면 이어하기 (게임 중 새로고침 대비)
 function resumeGame(d){
   student=d.student; quizList=d.quizList; current=d.current||0; score=d.score||0; answered=false;
   $intro.classList.add("hidden"); $result.classList.add("hidden");
@@ -573,17 +628,34 @@ function showResult(){
         <div id="lbList"><div class="lb-empty">순위를 불러오는 중… ⏳</div></div>
       </div>
 
-      <button class="btn btn-primary" id="againBtn">다시 도전하기 🔄</button>
+      <div class="done-wait" id="doneWait">다음 게임을 기다리는 중… 선생님이 시작하면 자동으로 참여해요 ⏳</div>
     </div>
   `;
-  $("againBtn").onclick=()=>{
-    stopLeaderboard();
-    buildQuizList(); current=0; score=0; answered=false;
-    saveProgress();
-    $result.classList.add("hidden"); $quiz.classList.remove("hidden"); $top.classList.remove("hidden");
-    renderQuestion();
-  };
   submit();
+  waitNextRound();   // 교수가 새 게임 시작하면 자동으로 대기실 참여
+}
+
+// 완료 후: 교수가 새 라운드를 시작하면 자동 참여
+let nextRoundTimer=null;
+function waitNextRound(){
+  if(nextRoundTimer) clearInterval(nextRoundTimer);
+  nextRoundTimer=setInterval(()=>{
+    fetch('/api/state').then(r=>r.json()).then(d=>{
+      const st=d.state||{};
+      // 라운드 번호가 바뀌었으면(새 게임) → 대기실로
+      if(st.status==='lobby'){
+        clearInterval(nextRoundTimer); nextRoundTimer=null;
+        clearProgress();
+        $result.classList.add("hidden");
+        enterLobby();
+      } else if(st.status==='playing' && st.round!==myRound){
+        clearInterval(nextRoundTimer); nextRoundTimer=null;
+        clearProgress(); myRound=st.round;
+        $result.classList.add("hidden");
+        startGameNow();
+      }
+    }).catch(()=>{});
+  }, 1500);
 }
 
 let lbTimer=null;
@@ -660,30 +732,30 @@ function submit(){
   });
 }
 
-// ── 페이지 로드 시: 저장된 진행상황이 있으면 이어하기 배너 표시 ──
+// ── 페이지 로드 시: 게임 진행 중 + 저장된 진행상황 있으면 이어하기 ──
 (function checkResume(){
   const d=loadProgress();
-  if(!d || d.finished) return;  // 없거나 이미 끝낸 게임이면 무시
-  const done=d.current||0, total=(d.quizList||[]).length||22;
-  const box=$("resumeBox");
-  box.className="resume";
-  box.innerHTML=`
-    <div class="r-msg"><b>${esc(d.student.name)}</b>님, 풀던 게임이 있어요!<br>
-    ${done}번째 문제까지 진행했어요 (현재 ${d.score||0}점). 이어서 할까요?</div>
-    <div class="r-btns">
-      <button class="btn btn-resume" id="resumeBtn">이어하기 ▶️</button>
-      <button class="btn btn-new" id="newBtn">새로 시작</button>
-    </div>
-  `;
-  $("resumeBtn").onclick=()=>resumeGame(d);
-  $("newBtn").onclick=()=>{
-    clearProgress();
-    box.className="hidden"; box.innerHTML="";
-    // 저장돼 있던 이름·학번·분반을 입력창에 미리 채워줌 (편의)
-    if(d.student){ $("name").value=d.student.name||""; $("sid").value=d.student.sid||""; $("classNo").value=d.student.classNo||""; }
-  };
-  // 이어하기 배너가 있을 때도 이름은 미리 채워두면 편함
-  if(d.student){ $("name").value=d.student.name||""; $("sid").value=d.student.sid||""; $("classNo").value=d.student.classNo||""; }
+  if(!d || d.finished || !d.student){ return; }
+  // 이름은 미리 채워둠 (편의)
+  $("name").value=d.student.name||""; $("sid").value=d.student.sid||""; $("classNo").value=d.student.classNo||"";
+  // 게임이 진행 중일 때만 이어하기 배너 표시
+  fetch('/api/state').then(r=>r.json()).then(res=>{
+    const st=res.state||{};
+    if(st.status!=='playing') return;  // 대기실이면 이어하기 없음
+    const done=d.current||0;
+    const box=$("resumeBox");
+    box.className="resume";
+    box.innerHTML=`
+      <div class="r-msg"><b>${esc(d.student.name)}</b>님, 풀던 게임이 있어요!<br>
+      ${done}번째 문제까지 진행했어요 (현재 ${d.score||0}점). 이어서 할까요?</div>
+      <div class="r-btns">
+        <button class="btn btn-resume" id="resumeBtn">이어하기 ▶️</button>
+        <button class="btn btn-new" id="newBtn">처음부터</button>
+      </div>
+    `;
+    $("resumeBtn").onclick=()=>{ student=d.student; myRound=st.round; resumeGame(d); };
+    $("newBtn").onclick=()=>{ clearProgress(); box.className="hidden"; box.innerHTML=""; };
+  }).catch(()=>{});
 })();
 </script>
 </body>

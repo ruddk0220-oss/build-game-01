@@ -6,6 +6,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const TEACHER_CODE = process.env.TEACHER_CODE || 'teacher';
 const DATA_FILE = path.join(__dirname, 'results.json');
+const STATE_FILE = path.join(__dirname, 'gamestate.json');
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -20,6 +21,18 @@ function loadData() {
 }
 function saveData(data) {
   fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+}
+
+// ── 게임 상태 로드/저장 (lobby=대기중, playing=진행중) ──
+function loadState() {
+  try {
+    return JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
+  } catch {
+    return { status: 'lobby', round: 0, startedAt: null };
+  }
+}
+function saveState(s) {
+  fs.writeFileSync(STATE_FILE, JSON.stringify(s, null, 2));
 }
 
 // ── 학생 제출: 최고점 유지, 제출 횟수 기록 ──
@@ -143,6 +156,52 @@ app.post('/api/reset', (req, res) => {
     return res.status(403).json({ ok: false, error: 'forbidden' });
   }
   saveData({});
+  res.json({ ok: true });
+});
+
+// ── 게임 상태 조회 (학생·강의화면이 수시로 확인) ──
+app.get('/api/state', (req, res) => {
+  res.json({ ok: true, state: loadState() });
+});
+
+// ── 교수: 게임 시작 (모든 학생 동시 출발) ──
+app.post('/api/start', (req, res) => {
+  if ((req.body || {}).code !== TEACHER_CODE) {
+    return res.status(403).json({ ok: false, error: 'forbidden' });
+  }
+  const prev = loadState();
+  const state = { status: 'playing', round: (prev.round || 0) + 1, startedAt: new Date().toISOString() };
+  saveState(state);
+  res.json({ ok: true, state });
+});
+
+// ── 교수: 대기실로 되돌리기 (새 라운드 준비, 기록도 초기화) ──
+app.post('/api/lobby', (req, res) => {
+  if ((req.body || {}).code !== TEACHER_CODE) {
+    return res.status(403).json({ ok: false, error: 'forbidden' });
+  }
+  const prev = loadState();
+  saveState({ status: 'lobby', round: prev.round || 0, startedAt: null });
+  saveData({});   // 새 게임 준비: 이전 기록 비움
+  res.json({ ok: true });
+});
+
+// ── 대기실 참가자 명단 (게임 시작 전 모인 학생) ──
+app.post('/api/waiting', (req, res) => {
+  const { name, sid, classNo } = req.body || {};
+  if (!name || !sid) return res.status(400).json({ ok: false, error: 'invalid' });
+  const data = loadData();
+  const key = sid + '|' + name;
+  const now = new Date().toISOString();
+  const prev = data[key] || {};
+  data[key] = {
+    name, sid, classNo: classNo || prev.classNo || '',
+    score: prev.score || 0, correct: prev.correct, total: prev.total,
+    attempts: prev.attempts || 0, bestAt: prev.bestAt, updatedAt: now,
+    waiting: true,
+    live: prev.live || null
+  };
+  saveData(data);
   res.json({ ok: true });
 });
 
